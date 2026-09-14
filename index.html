@@ -13,14 +13,19 @@
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Multi-Tenant Academy SaaS — Product, BA & Technical Blueprint V2</title>
+<title>V32 • Multi-Tenant Academy SaaS — Product, BA & Technical Blueprint V2</title>
 <meta name="description" content="Beginner-friendly, implementation-ready BRD and system architecture for a multi-tenant academy management SaaS platform.">
 
 <style>
 :root{
-  --bg:#f6f8fc;--panel:#fff;--text:#182033;--muted:#64708a;--line:#e4e9f2;
+  --bg:#f6f8fc;--panel:#fff;--surface:#fff;--surface-2:#f0f3f8;--text:#182033;--muted:#64708a;--line:#e4e9f2;
   --brand:#5b5ce2;--brand2:#7b61ff;--good:#087f5b;--warn:#a15c00;--danger:#b42318;
   --shadow:0 10px 30px rgba(25,35,60,.07);--radius:16px;--sidebar:280px;
+}
+html[data-theme="dark"]{
+  --bg:#0b1020;--panel:#111827;--surface:#151b2d;--surface-2:#0f1628;
+  --text:#eef2ff;--muted:#aab4c8;--line:#2a344a;
+  --shadow:0 14px 36px rgba(0,0,0,.28);
 }
 *{box-sizing:border-box} html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.58}
@@ -326,7 +331,7 @@ html[data-theme="dark"]{
   --shadow:rgba(0,0,0,.30);--code:#0d1424;
 }
 html,body{background:var(--bg)!important;color:var(--text)!important}
-body{transition:background-color .2s ease,color .2s ease}
+body{transition:none!important}
 a{color:var(--accent)}
 input,select,textarea,button{font-family:inherit}
 .section,.card,.panel,.note,.diagram,.mockwrap,.mock,.page-card,.tech-card,
@@ -812,6 +817,937 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
   .app.sidebar-collapsed .nav{overflow:visible}
 }
 
+
+
+/* V28 — fixed application shell + routed single-view documentation */
+@media(min-width:901px){
+  body{overflow:hidden;}
+  .app{display:block!important;min-height:100vh;}
+  .sidebar{position:fixed!important;left:0;top:0;bottom:0;width:280px!important;height:100vh!important;z-index:100;overflow-y:auto;overflow-x:visible;}
+  .main{margin-left:280px;min-height:100vh;height:100vh;overflow:hidden;}
+  .main .top{position:sticky;top:0;z-index:20;}
+  .main .content{height:calc(100vh - 64px);max-width:none;overflow-y:auto;overflow-x:hidden;padding:30px clamp(20px,3vw,42px) 80px;}
+  body .app.sidebar-collapsed .sidebar{width:84px!important;}
+  body .app.sidebar-collapsed .main{margin-left:84px;}
+}
+/* Only one documentation view is visible at a time; the content pane owns scrolling. */
+.route-section{display:none!important;}
+.route-section.route-active{display:block!important;}
+body:not([data-route="executive"]) .content > .hero{display:none;}
+@media(max-width:900px){
+  .route-section{display:none!important;}
+  .route-section.route-active{display:block!important;}
+  .main .content{overflow-x:hidden;}
+}
+
+/* V27 — final authoritative theme layer */
+html[data-theme="dark"] body,
+html[data-theme="dark"] .main,
+html[data-theme="dark"] .content{background:#080d18!important;color:#f4f7ff!important}
+html[data-theme="light"] body,
+html[data-theme="light"] .main,
+html[data-theme="light"] .content{background:#f6f8fc!important;color:#182033!important}
+html[data-theme="dark"] .top{background:rgba(8,13,24,.90)!important;border-color:#2a354b!important}
+html[data-theme="light"] .top{background:rgba(246,248,252,.90)!important;border-color:#e4e9f2!important}
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .diagram,
+html[data-theme="dark"] table,
+html[data-theme="dark"] .section,
+html[data-theme="dark"] .mock,
+html[data-theme="dark"] .mockwrap,
+html[data-theme="dark"] .sp-card{background:transparent!important;color:#f4f7ff!important;border-color:#2a354b!important}
+html[data-theme="light"] .card,
+html[data-theme="light"] .panel,
+html[data-theme="light"] .diagram,
+html[data-theme="light"] table{background:#fff!important;color:#182033!important}
+html[data-theme="dark"] th{background:#1d2639!important;color:#f4f7ff!important}
+html[data-theme="dark"] td{border-color:#2a354b!important;color:#e8edf8!important}
+html[data-theme="dark"] code{background:#0d1424!important;color:#e5eaff!important}
+html[data-theme="dark"] .note{background:#202750!important;color:#eef2ff!important}
+html[data-theme="dark"] .note.warn{background:#302717!important}
+html[data-theme="dark"] .note.danger{background:#321d22!important}
+html[data-theme="dark"] .note.good{background:#162c27!important}
+html[data-theme="dark"] .theme-toggle{background:#151b2d!important;color:#f4f7ff!important;border-color:#344057!important}
+html[data-theme="light"] .theme-toggle{background:#fff!important;color:#182033!important;border-color:#e4e9f2!important}
+
+</style>
+<script>
+window.toggleTheme=function(event){
+  if(event){event.preventDefault();event.stopPropagation();}
+  var root=document.documentElement;
+  var next=root.getAttribute('data-theme')==='dark'?'light':'dark';
+  root.setAttribute('data-theme',next);
+  var b=document.getElementById('themeToggle');
+  if(b)b.setAttribute('aria-label',next==='dark'?'Switch to light mode':'Switch to dark mode');
+  try{localStorage.setItem('academy-theme',next)}catch(e){}
+  return false;
+};
+</script>
+
+<style id="v29-responsive-authoritative">
+/* V29 — authoritative responsive shell
+   Desktop: fixed sidebar + independently scrolling main content.
+   Tablet/mobile: full-width content + fixed off-canvas sidebar. */
+:root{--shell-sidebar:280px;--shell-sidebar-collapsed:84px;--topbar-h:64px}
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+body{min-width:0}
+.app{display:block!important;min-height:100dvh;width:100%;max-width:100%;}
+.sidebar{
+  position:fixed!important;left:0;top:0;bottom:0;z-index:40;
+  width:var(--shell-sidebar)!important;max-width:var(--shell-sidebar)!important;
+  height:100dvh!important;min-height:0;overflow-x:hidden;overflow-y:auto;
+  transform:none!important;
+}
+.main{
+  width:calc(100% - var(--shell-sidebar));
+  max-width:none!important;min-width:0;margin-left:var(--shell-sidebar);
+  overflow-x:hidden;
+}
+.app.sidebar-collapsed .sidebar{
+  width:var(--shell-sidebar-collapsed)!important;max-width:var(--shell-sidebar-collapsed)!important;
+}
+.app.sidebar-collapsed .main{width:calc(100% - var(--shell-sidebar-collapsed));margin-left:var(--shell-sidebar-collapsed)}
+.top{position:sticky!important;top:0;z-index:35;min-width:0;width:100%;}
+.content{width:100%;max-width:1280px;min-width:0;margin:0 auto;padding-left:clamp(16px,3vw,36px);padding-right:clamp(16px,3vw,36px);}
+.hero{min-width:0;max-width:100%;}
+.grid,.two,.tech-grid,.page-catalog{min-width:0;}
+.grid>* ,.two>* ,.tech-grid>* ,.page-catalog>*{min-width:0;max-width:100%;}
+.card,.panel,.note,.diagram,.tech-card,.page-card{min-width:0;max-width:100%;overflow-wrap:anywhere;}
+/* Long technical content gets horizontal scrolling locally, never on the page. */
+.diagram,.arch-strip,pre,.table-wrap,.sp-table-wrap,.sp-calendar-wrap{max-width:100%;overflow:auto;-webkit-overflow-scrolling:touch;}
+svg,canvas,video,img{max-width:100%;}
+
+@media (max-width:1100px){
+  .app,.app.sidebar-collapsed{display:block!important;}
+  .main,.app.sidebar-collapsed .main{width:100%;max-width:100%!important;margin-left:0;}
+  .sidebar,.app.sidebar-collapsed .sidebar{
+    position:fixed!important;left:0;top:0;bottom:0;z-index:100;
+    width:min(300px,86vw)!important;max-width:min(300px,86vw)!important;
+    height:100dvh!important;transform:translateX(-105%)!important;
+    padding:22px 16px;box-shadow:18px 0 48px rgba(0,0,0,.28);
+  }
+  .sidebar.open,.sidebar.active{transform:translateX(0)!important;}
+  .app.sidebar-collapsed .brand{font-size:17px;text-align:left;padding:10px 12px 18px;}
+  .app.sidebar-collapsed .brand:before{display:none;}
+  .app.sidebar-collapsed .brand small{display:block;}
+  .app.sidebar-collapsed .nav .group{display:block;}
+  .app.sidebar-collapsed .nav button{font-size:13px;text-align:left;padding:9px 12px;min-height:0;}
+  .app.sidebar-collapsed .nav button:before{display:none;}
+  .content{max-width:none;padding-left:clamp(14px,3vw,30px);padding-right:clamp(14px,3vw,30px);}
+  .top{padding-left:clamp(10px,2vw,18px);padding-right:clamp(10px,2vw,18px);}
+}
+@media (max-width:800px){
+  :root{--topbar-h:58px}
+  .top{min-height:58px;gap:8px;}
+  .search{flex:1;min-width:0;width:100%;}
+  .top .btn{flex:0 0 auto;}
+  .content{padding-top:22px;padding-bottom:60px;}
+  .hero{padding:clamp(22px,5vw,30px);border-radius:18px;}
+  .hero h1{font-size:clamp(27px,6vw,34px);}
+  .grid,.two,.tech-grid,.page-catalog{grid-template-columns:1fr!important;}
+  .ui-kpis,.sp-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .ui-grid,.sp-grid2{grid-template-columns:1fr;}
+  .ui-form{grid-template-columns:1fr;}
+  .sp-grid3{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width:600px){
+  .top{padding:8px 10px;}
+  .top .btn:not(#menu){font-size:0;width:42px;height:42px;padding:0;display:grid;place-items:center;}
+  .top .btn:not(#menu):before{content:'↥';font-size:17px;}
+  .content{padding-left:12px;padding-right:12px;}
+  .hero{padding:22px 18px;}
+  .hero h1{font-size:27px;}
+  h2{font-size:23px;margin-top:34px;}
+  .card{padding:16px;}
+  .ui-kpis,.sp-kpis,.sp-grid3{grid-template-columns:1fr!important;}
+  .ui-toolbar{align-items:stretch;}
+  .ui-toolbar h4{min-width:100%;}
+  .ui-search{min-width:100%;}
+  .sp-toolbar{align-items:stretch;flex-direction:column;}
+  .sp-role-tabs{overflow-x:auto;flex-wrap:nowrap;}
+  .sp-role{flex:0 0 auto;}
+  .sp-actions{width:100%;}
+  .sp-action{flex:1;}
+  .sp-screen{padding:12px;}
+  .prototype-content{padding:12px;}
+}
+@media (max-width:420px){
+  .top{gap:6px;}
+  .top .btn:not(#menu){display:none;}
+  .search{font-size:13px;}
+  .content{padding-left:10px;padding-right:10px;}
+  .hero{padding:20px 16px;}
+  .hero h1{font-size:25px;}
+  .hero p{font-size:14px;}
+  .pill{font-size:11px;}
+  th,td{font-size:12px;padding:8px 9px;}
+}
+@media (prefers-reduced-motion:reduce){.app,.sidebar,.nav button{transition:none!important}}
+@media print{
+  .sidebar{position:static!important;width:auto!important;height:auto!important;transform:none!important;}
+  .main,.app.sidebar-collapsed .main{width:100%!important;margin-left:0!important;}
+}
+</style>
+
+
+
+
+<style id="v31-authoritative-responsive-ui">
+/* =========================================================
+   V31 — responsive application shell
+   One source of truth for layout. Older rules are overridden
+   here intentionally so the prototype behaves consistently.
+   ========================================================= */
+:root{--v31-sidebar:280px;--v31-sidebar-mini:78px;--v31-topbar:64px}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{margin:0;min-width:0;overflow-x:hidden!important}
+*,*:before,*:after{box-sizing:border-box}
+
+/* ---------- Desktop ---------- */
+@media (min-width:1101px){
+  .app{
+    display:block!important;
+    min-height:100dvh!important;
+  }
+  .sidebar{
+    position:fixed!important;
+    inset:0 auto 0 0!important;
+    width:var(--v31-sidebar)!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    z-index:1000!important;
+    transition:width .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease!important;
+  }
+  .main{
+    display:block!important;
+    width:calc(100% - var(--v31-sidebar))!important;
+    min-width:0!important;
+    margin-left:var(--v31-sidebar)!important;
+    overflow:visible!important;
+    transition:width .25s cubic-bezier(.2,.8,.2,1),margin-left .25s cubic-bezier(.2,.8,.2,1)!important;
+  }
+  .app.sidebar-collapsed .sidebar{
+    width:var(--v31-sidebar-mini)!important;
+  }
+  .app.sidebar-collapsed .main{
+    width:calc(100% - var(--v31-sidebar-mini))!important;
+    margin-left:var(--v31-sidebar-mini)!important;
+  }
+  .content{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:32px clamp(20px,3vw,48px) 72px!important;
+  }
+  .top{
+    position:sticky!important;
+    top:0!important;
+    min-height:var(--v31-topbar)!important;
+    width:100%!important;
+    z-index:900!important;
+    padding:10px clamp(14px,2vw,28px)!important;
+  }
+  .top .search{flex:1 1 auto!important;min-width:0!important;max-width:none!important}
+}
+
+/* ---------- Tablet + mobile: off-canvas navigation ---------- */
+@media (max-width:1100px){
+  body{min-width:0!important}
+  .app{
+    display:block!important;
+    min-height:100dvh!important;
+  }
+  .sidebar{
+    position:fixed!important;
+    inset:0 auto 0 0!important;
+    width:min(300px,86vw)!important;
+    max-width:86vw!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    transform:translate3d(-105%,0,0)!important;
+    transition:transform .3s cubic-bezier(.22,.8,.22,1),box-shadow .3s ease!important;
+    z-index:2000!important;
+    box-shadow:18px 0 48px rgba(0,0,0,.24)!important;
+  }
+  .sidebar.open,.sidebar.active,
+  body.sidebar-open .sidebar{
+    transform:translate3d(0,0,0)!important;
+  }
+  .main{
+    display:block!important;
+    width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    overflow:visible!important;
+  }
+  .top{
+    position:sticky!important;
+    top:0!important;
+    width:100%!important;
+    min-height:58px!important;
+    z-index:900!important;
+    padding:9px 12px!important;
+    gap:8px!important;
+  }
+  .top .search{
+    flex:1 1 160px!important;
+    min-width:0!important;
+    max-width:none!important;
+  }
+  .content{
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:26px clamp(14px,3vw,28px) 64px!important;
+  }
+}
+
+/* ---------- Tablet ---------- */
+@media (min-width:701px) and (max-width:1100px){
+  .content{padding-left:28px!important;padding-right:28px!important}
+  .hero{padding:34px!important}
+  .hero h1{font-size:clamp(30px,4vw,42px)!important}
+}
+
+/* ---------- Phones ---------- */
+@media (max-width:700px){
+  .top{
+    flex-wrap:nowrap!important;
+  }
+  #menu{
+    flex:0 0 42px!important;
+    width:42px!important;
+    height:42px!important;
+    padding:0!important;
+  }
+  .top .search{
+    height:42px!important;
+    font-size:14px!important;
+  }
+  .top > .btn:last-child{
+    flex:0 0 auto!important;
+    padding:9px 10px!important;
+    white-space:nowrap!important;
+  }
+  .content{
+    padding:20px 12px 56px!important;
+  }
+  .hero{
+    padding:24px!important;
+    border-radius:18px!important;
+    overflow:hidden!important;
+  }
+  .hero h1{
+    font-size:clamp(27px,8vw,36px)!important;
+    overflow-wrap:anywhere!important;
+  }
+  .hero p{font-size:15px!important}
+  .grid,.two,.three,.four,.tech-grid,.stats-grid,.card-grid{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .card,.panel,.page-card,.tech-card,.mockwrap,.mock,.ui-panel,.ui-kpi{
+    min-width:0!important;
+    max-width:100%!important;
+  }
+  table{
+    width:max-content!important;
+    min-width:640px!important;
+  }
+  .table-wrap,.table-container,.table-responsive,
+  .diagram,.svgdiagram{
+    max-width:100%!important;
+    overflow-x:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+  }
+  pre{
+    max-width:100%!important;
+    overflow:auto!important;
+    white-space:pre!important;
+  }
+  img,svg,video,canvas{
+    max-width:100%!important;
+  }
+  .toolbar,.actions,.filters,.pills{
+    flex-wrap:wrap!important;
+  }
+  .btn,button{
+    max-width:100%;
+  }
+}
+
+/* ---------- Small phones ---------- */
+@media (max-width:430px){
+  .top{
+    padding:8px!important;
+    gap:6px!important;
+  }
+  .top .search{
+    min-width:0!important;
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+  .top > .btn:last-child{
+    font-size:12px!important;
+    padding:8px!important;
+  }
+  .content{padding:16px 9px 48px!important}
+  .hero{padding:20px!important;border-radius:16px!important}
+  .card,.panel,.page-card,.tech-card,.mockwrap,.mock,.ui-panel,.ui-kpi{
+    padding:13px!important;
+    border-radius:13px!important;
+  }
+  h2{font-size:22px!important}
+  h3{font-size:17px!important}
+}
+
+/* ---------- Very small phones ---------- */
+@media (max-width:360px){
+  .top > .btn:last-child{
+    font-size:0!important;
+    width:42px!important;
+    overflow:hidden!important;
+  }
+  .top > .btn:last-child::before{
+    content:"⤓"!important;
+    font-size:16px!important;
+  }
+  .hero h1{font-size:26px!important}
+  .pills{gap:6px!important}
+  .pill{font-size:11px!important;padding:6px 8px!important}
+}
+
+/* ---------- Prototype modal ---------- */
+.prototype-modal{
+  padding:clamp(8px,2vw,20px)!important;
+}
+.prototype-window{
+  width:min(1180px,100%)!important;
+  height:min(92dvh,900px)!important;
+  max-height:calc(100dvh - 16px)!important;
+  min-height:0!important;
+}
+@media(max-width:700px){
+  .prototype-modal{padding:0!important}
+  .prototype-window{
+    width:100%!important;
+    height:100dvh!important;
+    max-height:100dvh!important;
+    border-radius:0!important;
+  }
+}
+
+/* ---------- Motion ---------- */
+@media (prefers-reduced-motion:no-preference){
+  .content > section{
+    animation:v31-section-in .35s cubic-bezier(.2,.8,.2,1) both;
+  }
+  .card,.page-card,.tech-card,.ui-kpi{
+    transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease!important;
+  }
+  .card:hover,.page-card:hover,.tech-card:hover,.ui-kpi:hover{
+    transform:translateY(-2px);
+  }
+  .nav button{
+    transition:background .18s ease,color .18s ease,transform .18s ease!important;
+  }
+  .nav button:hover{transform:translateX(2px)}
+  .btn{
+    transition:transform .16s ease,box-shadow .16s ease,background .16s ease!important;
+  }
+  .btn:active{transform:scale(.98)}
+}
+@keyframes v31-section-in{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*:before,*:after{
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
+
+/* ---------- Print ---------- */
+@media print{
+  .sidebar,.top,.theme-toggle{display:none!important}
+  .app,.main,.content{display:block!important;width:auto!important;margin:0!important;max-width:none!important}
+  .content{padding:0!important}
+  .card,.panel,.tech-card{box-shadow:none!important}
+}
+</style>
+
+<script id="v31-shell-controls">
+(function(){
+  'use strict';
+
+  function isMenu(el){
+    return el && (el.id==='menu' || el.closest('#menu'));
+  }
+
+  function updateMenu(){
+    var menu=document.getElementById('menu');
+    var app=document.querySelector('.app');
+    var side=document.getElementById('sidebar');
+    if(!menu || !app || !side) return;
+
+    var mobile=window.matchMedia('(max-width:1100px)').matches;
+    if(mobile){
+      var open=side.classList.contains('open');
+      menu.textContent=open?'×':'☰';
+      menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');
+      menu.setAttribute('title',open?'Close navigation':'Open navigation');
+    }else{
+      var collapsed=app.classList.contains('sidebar-collapsed');
+      menu.textContent=collapsed?'»':'«';
+      menu.setAttribute('aria-label',collapsed?'Expand sidebar':'Collapse sidebar');
+      menu.setAttribute('title',collapsed?'Expand sidebar':'Collapse sidebar');
+    }
+  }
+
+  function toggleMenu(event){
+    if(event){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+    var app=document.querySelector('.app');
+    var side=document.getElementById('sidebar');
+    if(!app || !side) return;
+
+    if(window.matchMedia('(max-width:1100px)').matches){
+      var open=side.classList.toggle('open');
+      side.classList.toggle('active',open);
+      document.body.classList.toggle('sidebar-open',open);
+    }else{
+      app.classList.toggle('sidebar-collapsed');
+      try{
+        localStorage.setItem(
+          'academy-sidebar',
+          app.classList.contains('sidebar-collapsed')?'collapsed':'expanded'
+        );
+      }catch(e){}
+    }
+    updateMenu();
+  }
+
+  /* Capture once, then stop older bubbling handlers from firing a second time. */
+  document.addEventListener('click',function(e){
+    var menu=isMenu(e.target);
+    if(menu){
+      toggleMenu(e);
+      return;
+    }
+
+    var print=e.target && e.target.closest ?
+      e.target.closest('.print-button,.pdf-button,[data-action="print"],[data-action="pdf"]') : null;
+
+    if(print){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.print();
+      return;
+    }
+
+    if(window.matchMedia('(max-width:1100px)').matches){
+      var side=document.getElementById('sidebar');
+      var nav=e.target && e.target.closest ? e.target.closest('#sidebar .nav button') : null;
+      if(nav && side){
+        side.classList.remove('open','active');
+        document.body.classList.remove('sidebar-open');
+        updateMenu();
+      }
+    }
+  },true);
+
+  window.addEventListener('resize',function(){
+    var side=document.getElementById('sidebar');
+    if(window.innerWidth>1100 && side){
+      side.classList.remove('open','active');
+      document.body.classList.remove('sidebar-open');
+    }
+    updateMenu();
+  });
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var app=document.querySelector('.app');
+    if(app){
+      try{
+        if(window.innerWidth>1100 &&
+           localStorage.getItem('academy-sidebar')==='collapsed'){
+          app.classList.add('sidebar-collapsed');
+        }
+      }catch(e){}
+    }
+    updateMenu();
+  });
+
+  window.academyToggleSidebar=toggleMenu;
+})();
+</script>
+
+
+<style id="v32-final-shell">
+/* =========================================================
+   V32 FINAL — responsive shell, mobile drawer, motion
+   ========================================================= */
+
+/* Desktop is an application viewport: sidebar + independently
+   scrolling content. Mobile returns to normal document scrolling. */
+@media (min-width:1101px){
+  html,body{height:100%;overflow:hidden!important}
+  .app{height:100dvh!important;min-height:0!important}
+  .main{
+    height:100dvh!important;
+    min-height:0!important;
+    overflow:hidden!important;
+  }
+  .top{
+    flex:0 0 auto!important;
+    height:64px!important;
+  }
+  .content{
+    height:calc(100dvh - 64px)!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+    overscroll-behavior:contain;
+    scrollbar-gutter:stable;
+  }
+}
+
+/* At <=1100px the sidebar is a true drawer. The top bar remains
+   accessible above it so the same menu button closes it. */
+@media (max-width:1100px){
+  html,body{height:auto!important;overflow-x:hidden!important}
+  body{overflow-y:auto!important}
+  .sidebar,
+  .app.sidebar-collapsed .sidebar{
+    top:58px!important;
+    bottom:0!important;
+    height:calc(100dvh - 58px)!important;
+    max-height:calc(100dvh - 58px)!important;
+    z-index:2200!important;
+  }
+  .top{
+    z-index:3000!important;
+  }
+  #menu{
+    position:relative!important;
+    z-index:3100!important;
+  }
+}
+
+/* Keep Print / PDF available on every phone. */
+@media (max-width:700px){
+  .top .btn:not(#menu){
+    display:grid!important;
+    place-items:center!important;
+    flex:0 0 42px!important;
+    width:42px!important;
+    height:42px!important;
+    min-width:42px!important;
+    padding:0!important;
+    font-size:0!important;
+    overflow:hidden!important;
+  }
+  .top .btn:not(#menu)::before{
+    content:"⤓"!important;
+    font-size:17px!important;
+    line-height:1!important;
+  }
+  .top .search{
+    flex:1 1 auto!important;
+    width:auto!important;
+    min-width:0!important;
+  }
+}
+
+/* Slightly more compact controls on very small phones. */
+@media (max-width:360px){
+  .top{padding:8px 7px!important;gap:5px!important}
+  #menu,.top .btn:not(#menu){width:40px!important;min-width:40px!important;height:40px!important}
+  .top .search{height:40px!important;font-size:12px!important}
+}
+
+/* Never allow flex/grid children to create viewport overflow. */
+.content,.content *{min-width:0}
+.grid>* ,.two>* ,.three>* ,.four>* ,.tech-grid>* ,
+.page-catalog>* ,.mockgrid>* ,.mockcards>* ,.publiccards>*{
+  min-width:0!important;
+  max-width:100%!important;
+}
+p,h1,h2,h3,h4,h5,h6,li,td,th{
+  overflow-wrap:anywhere;
+}
+input,select,textarea,button{
+  max-width:100%;
+}
+table{max-width:100%}
+
+/* Motion system */
+@media (prefers-reduced-motion:no-preference){
+  .sidebar{
+    transition:
+      width .28s cubic-bezier(.2,.8,.2,1),
+      transform .32s cubic-bezier(.22,.8,.22,1),
+      box-shadow .28s ease!important;
+  }
+  .main{
+    transition:
+      margin-left .28s cubic-bezier(.2,.8,.2,1),
+      width .28s cubic-bezier(.2,.8,.2,1)!important;
+  }
+  .top{
+    transition:background-color .2s ease,border-color .2s ease,box-shadow .2s ease!important;
+  }
+  .content > .hero{
+    animation:v32-fade-up .48s cubic-bezier(.16,1,.3,1) both;
+  }
+  .content > section.route-active{
+    animation:v32-route-in .32s cubic-bezier(.16,1,.3,1) both;
+  }
+  .card,.panel,.note,.tech-card,.page-card,.ui-kpi,.sp-card{
+    transition:
+      transform .2s ease,
+      box-shadow .2s ease,
+      border-color .2s ease!important;
+  }
+  .card:hover,.panel:hover,.tech-card:hover,.page-card:hover,.ui-kpi:hover{
+    transform:translateY(-2px);
+  }
+  .nav button{
+    transition:background .18s ease,color .18s ease,transform .18s ease!important;
+  }
+  .nav button:hover{transform:translateX(2px)}
+  .theme-toggle{
+    transition:transform .2s ease,box-shadow .2s ease,background-color .2s ease!important;
+  }
+  .theme-toggle:hover{transform:translateY(-3px)}
+}
+@keyframes v32-fade-up{
+  from{opacity:0;transform:translateY(14px) scale(.995)}
+  to{opacity:1;transform:none}
+}
+@keyframes v32-route-in{
+  from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto!important}
+  *,*:before,*:after{
+    animation:none!important;
+    transition:none!important;
+  }
+}
+
+/* Mobile drawer scrim */
+#v32-scrim{
+  display:none;
+  position:fixed;
+  inset:58px 0 0 0;
+  z-index:2100;
+  background:rgba(7,10,20,.42);
+  backdrop-filter:blur(2px);
+}
+body.sidebar-open #v32-scrim{display:block}
+@media (min-width:1101px){#v32-scrim{display:none!important}}
+</style>
+
+<script id="v32-final-controls">
+(function(){
+  'use strict';
+
+  function q(s){return document.querySelector(s)}
+
+  function updateMenu(){
+    var menu=q('#menu'), app=q('.app'), side=q('#sidebar');
+    if(!menu||!app||!side)return;
+    var mobile=window.matchMedia('(max-width:1100px)').matches;
+    if(mobile){
+      var open=side.classList.contains('open');
+      menu.textContent=open?'×':'☰';
+      menu.setAttribute('aria-label',open?'Close navigation':'Open navigation');
+      menu.setAttribute('title',open?'Close navigation':'Open navigation');
+    }else{
+      var collapsed=app.classList.contains('sidebar-collapsed');
+      menu.textContent=collapsed?'»':'«';
+      menu.setAttribute('aria-label',collapsed?'Expand sidebar':'Collapse sidebar');
+      menu.setAttribute('title',collapsed?'Expand sidebar':'Collapse sidebar');
+    }
+  }
+
+  function toggleSidebar(e){
+    if(e){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    }
+    var app=q('.app'), side=q('#sidebar');
+    if(!app||!side)return;
+
+    if(window.matchMedia('(max-width:1100px)').matches){
+      var open=!side.classList.contains('open');
+      side.classList.toggle('open',open);
+      side.classList.toggle('active',open);
+      document.body.classList.toggle('sidebar-open',open);
+    }else{
+      var collapsed=!app.classList.contains('sidebar-collapsed');
+      app.classList.toggle('sidebar-collapsed',collapsed);
+      try{localStorage.setItem('academy-sidebar',collapsed?'collapsed':'expanded')}catch(_){}
+    }
+    updateMenu();
+  }
+
+  /* Capture phase owns the shell buttons and prevents the legacy
+     handlers in earlier blueprint versions from firing twice. */
+  document.addEventListener('click',function(e){
+    var menu=e.target&&e.target.closest?e.target.closest('#menu'):null;
+    if(menu){
+      toggleSidebar(e);
+      return;
+    }
+
+    var print=e.target&&e.target.closest?
+      e.target.closest('.top .btn:not(#menu),.print-button,.pdf-button,[data-action="print"],[data-action="pdf"]'):null;
+    if(print){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      window.print();
+      return;
+    }
+
+    var scrim=e.target&&e.target.closest?e.target.closest('#v32-scrim'):null;
+    if(scrim){
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      var side=q('#sidebar');
+      if(side)side.classList.remove('open','active');
+      document.body.classList.remove('sidebar-open');
+      updateMenu();
+      return;
+    }
+
+    if(window.matchMedia('(max-width:1100px)').matches){
+      var nav=e.target&&e.target.closest?e.target.closest('#sidebar .nav button'):null;
+      if(nav){
+        var side=q('#sidebar');
+        if(side)side.classList.remove('open','active');
+        document.body.classList.remove('sidebar-open');
+        updateMenu();
+      }
+    }
+  },true);
+
+  window.addEventListener('resize',function(){
+    var side=q('#sidebar');
+    if(window.innerWidth>1100 && side){
+      side.classList.remove('open','active');
+      document.body.classList.remove('sidebar-open');
+    }
+    updateMenu();
+  });
+
+  document.addEventListener('DOMContentLoaded',function(){
+    var app=q('.app'), side=q('#sidebar');
+    if(!document.getElementById('v32-scrim')){
+      var s=document.createElement('div');
+      s.id='v32-scrim';
+      s.setAttribute('aria-hidden','true');
+      document.body.appendChild(s);
+    }
+    try{
+      if(window.innerWidth>1100 &&
+         localStorage.getItem('academy-sidebar')==='collapsed' && app){
+        app.classList.add('sidebar-collapsed');
+      }
+    }catch(_){}
+    updateMenu();
+
+    /* Make every route transition visibly intentional. */
+    var content=q('#content');
+    if(content && window.MutationObserver){
+      var observer=new MutationObserver(function(mutations){
+        var routeChanged=mutations.some(function(m){
+          return m.type==='attributes' && m.attributeName==='class' && m.target.classList.contains('route-active');
+        });
+        if(routeChanged){
+          var active=content.querySelector('.route-active');
+          if(active && matchMedia('(prefers-reduced-motion:no-preference)').matches){
+            active.style.animation='none';
+            void active.offsetWidth;
+            active.style.animation='v32-route-in .32s cubic-bezier(.16,1,.3,1) both';
+          }
+        }
+      });
+      observer.observe(content,{subtree:true,attributes:true,attributeFilter:['class']});
+    }
+  });
+
+  window.academyToggleSidebar=toggleSidebar;
+})();
+</script>
+
+
+<style id="v33-theme-shell">
+/* V33: eliminate stray theme surfaces across the application shell. */
+html,body,.app,.main,.content{background:var(--bg)!important;color:var(--text)!important;}
+.main{background-color:var(--bg)!important;}
+.content{background:var(--bg)!important;}
+html[data-theme="dark"] body,
+html[data-theme="dark"] .app,
+html[data-theme="dark"] .main,
+html[data-theme="dark"] .content{background:#0b1020!important;}
+html[data-theme="light"] body,
+html[data-theme="light"] .app,
+html[data-theme="light"] .main,
+html[data-theme="light"] .content{background:#f5f7fb!important;}
+/* The documentation section itself is a surface, not another page-sized body. */
+.route-section{background:transparent!important;}
+#prototype.route-section,#all-pages.route-section{background:transparent!important;}
+/* Prototype navigation is always visible in the documentation sidebar. */
+.nav .group{margin-top:2px;}
+</style>
+
+<script id="v33-prototype-nav">
+(function(){
+  function sync(){
+    var hash=decodeURIComponent(location.hash.replace(/^#/,''));
+    if(hash==='prototype'||hash==='all-pages'){
+      document.querySelectorAll('.nav button[data-target]').forEach(function(b){
+        b.classList.toggle('active',b.dataset.target===hash);
+      });
+    }
+  }
+  window.addEventListener('hashchange',sync);
+  document.addEventListener('DOMContentLoaded',sync);
+})();
+</script>
+
+<style id="v34-frontend-audit">
+/* V34: one application background; documentation surfaces stay transparent. */
+html[data-theme="dark"] body,
+html[data-theme="dark"] .app,
+html[data-theme="dark"] .main,
+html[data-theme="dark"] .content { background:#0b1020 !important; }
+html[data-theme="dark"] .section,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .diagram,
+html[data-theme="dark"] .mock,
+html[data-theme="dark"] .mockwrap,
+html[data-theme="dark"] .sp-card,
+html[data-theme="dark"] .sp-screen,
+html[data-theme="dark"] table { background:transparent !important; }
+html[data-theme="dark"] .sidebar { background:#080c17 !important; }
+html[data-theme="dark"] .top { background:#0b1020 !important; }
+html,body { max-width:100%; overflow-x:hidden !important; }
+.content { min-width:0 !important; }
 </style>
 </head>
 <body data-app-mode="spa">
@@ -827,6 +1763,7 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
     <button data-target="roles">Roles & Access</button>
     <button data-target="auth">Authentication</button>
     <button data-target="org">Organizations & Tenancy</button>
+    <button data-target="onboarding">Academy Launch & Migration</button>
     <button data-target="students">Students & Guardians</button>
     <button data-target="teachers">Teachers</button>
     <button data-target="academics">Courses & Progress</button>
@@ -837,6 +1774,9 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
     <button data-target="finance">Student Finance</button>
     <button data-target="saas">SaaS Billing & Entitlements</button>
     <button data-target="analytics">Analytics</button>
+    <div class="group">Prototype</div>
+    <button data-target="prototype">Interactive Prototype</button>
+    <button data-target="all-pages">Complete UI Prototype</button>
     <div class="group">Engineering</div>
     <button data-target="architecture">System Architecture</button>
     <button data-target="data">Data Model</button>
@@ -856,7 +1796,7 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
 <div class="top">
   <button class="btn" id="menu" aria-label="Collapse sidebar" title="Collapse sidebar">«</button>
   <input class="search" id="search" placeholder="Search this blueprint…">
-  <button class="btn" onclick="window.print()">Print / PDF</button>
+  <button type="button" class="btn print-button" id="printButton" aria-label="Print or save as PDF">Print / PDF</button>
 </div>
 <div class="content" id="content">
 
@@ -869,7 +1809,7 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
 
 
 
-<section id="technology" class="section">
+<section id="technology" class="section route-section route-section">
 <h2>Technology & AWS Architecture — Final Baseline</h2>
 <p><b>Recommended stack:</b> Next.js + TypeScript for the frontend, Three.js/React Three Fiber for the public 3D experience, NestJS + TypeScript for the backend, PostgreSQL as the primary transactional database, Redis-compatible caching/queues, S3 for files, WebRTC/SFU for classrooms, and AWS for production.</p>
 
@@ -915,7 +1855,7 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
 <div class="note good"><b>Database decision:</b> PostgreSQL is the default V1 system of record. If you still want DynamoDB, introduce it intentionally as a secondary store for a concrete high-throughput access pattern—not because the application is running on AWS.</div>
 </section>
 
-<section id="prototype" class="section">
+<section id="prototype" class="section route-section route-section">
 <h2>0. Interactive Product Prototype</h2>
 <p>These are representative product screens showing the intended look, information hierarchy and responsive behavior. The real implementation must also provide loading, empty, error, permission-denied and mobile states.</p>
 <div class="prototype-tabs">
@@ -934,7 +1874,7 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
 
 
 
-<section id="architecture-diagrams" class="section">
+<section id="architecture-diagrams" class="section route-section route-section">
 <h2>Architecture Diagrams</h2>
 <p>Stakeholder and engineering views of how the multi-tenant platform moves data, stores relationships, and composes the application.</p>
 
@@ -1046,7 +1986,7 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
 </div>
 </section>
 
-<section id="all-pages" class="section stakeholder-prototype">
+<section id="all-pages" class="section route-section stakeholder-prototype">
 <h2>31. Complete UI Page Prototype</h2>
 <p>This is the stakeholder-ready interactive prototype for every page defined in the product blueprint. Each selection renders a full screen composition with realistic sample data and responsive interaction patterns. Select a role and page to see the intended real application screen—not a page catalog. The prototype uses the same responsive interaction model as <b>0. Interactive Product Prototype</b>.</p>
 <div class="stakeholder-proto" id="stakeholderProto">
@@ -1073,7 +2013,7 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
   </div>
 </div>
 </section>
-<section id="responsive" class="section">
+<section id="responsive" class="section route-section route-section">
 <h2>32. Responsive Design System</h2>
 <p>The application should not be treated as “desktop shrunk to mobile.” Each major workflow gets an intentional mobile interaction model.</p>
 <table><tr><th>Viewport</th><th>Layout strategy</th></tr>
@@ -1085,7 +2025,7 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
 <div class="two"><div class="card"><h3>Mobile rules</h3><ul><li>Minimum touch target around 44px.</li><li>No fixed-width content.</li><li>Forms stack labels and controls.</li><li>Important actions stay reachable.</li><li>Dialogs become full-screen sheets where appropriate.</li><li>Tables become cards or prioritized columns.</li><li>Calendar becomes agenda/day view.</li><li>Filters become a bottom sheet/drawer.</li><li>Online classroom controls remain reachable with safe spacing.</li></ul></div>
 <div class="card"><h3>Technical CSS rules</h3><ul><li>Use fluid widths and <code>minmax()</code> grids.</li><li>Use <code>clamp()</code> for typography.</li><li>Avoid viewport-fixed heights for content areas.</li><li>Respect <code>env(safe-area-inset-*)</code> on mobile.</li><li>Use <code>overflow-x:auto</code> only for genuinely tabular content.</li><li>Test at 320, 360, 390, 430, 768, 1024, 1280 and 1440px widths.</li><li>Support keyboard navigation and reduced motion.</li></ul></div></div>
 </section>
-<section id="business" class="section">
+<section id="business" class="section route-section route-section">
 <h2>28. Product Manager + Senior Business Analyst View</h2>
 <h3>Business problem & opportunity</h3><div class="card"><p>Academies often run operations across spreadsheets, WhatsApp groups, calendars and payment portals. This product unifies operational truth while preserving familiar workflows. The differentiator is not “another CRM”; it is the combination of learning operations, scheduling, finance, communication and online teaching in a tenant-aware platform.</p></div>
 <h3>Personas, goals and measurable outcomes</h3>
@@ -1097,7 +2037,7 @@ html[data-theme="dark"] .mocktabs{border-bottom-color:var(--border)!important}
 <h3>Prioritization framework</h3><p><b>P0:</b> identity, tenancy, authorization, core people, enrollment, scheduling, finance correctness and audit. <b>P1:</b> resources, messaging, calendar integration and classroom. <b>P2:</b> advanced analytics, workflow automation and premium enhancements.</p>
 </section>
 
-<section id="technical" class="section">
+<section id="technical" class="section route-section route-section">
 <h2>29. Solution / Technical Architecture Deep Dive</h2>
 <h3>Architecture style</h3><p>Start with a <b>modular monolith</b>: one deployable backend with strict domain modules, plus dedicated worker processes. This is easier to operate than early microservices while preserving boundaries. Extract only proven bottlenecks such as WebRTC media, notification processing or analytics when scale demands it.</p>
 <h3>Layering rule</h3>
@@ -1127,17 +2067,18 @@ delivery status + retry / DLQ</pre>
 <h3>Security boundaries</h3><ul><li>Tenant context is established before repository access.</li><li>Repository queries include tenant scope.</li><li>Resource authorization verifies both role and relationship.</li><li>File access returns signed URLs only after authorization.</li><li>Audit service is write-only from business code and has no update/delete API.</li></ul>
 </section>
 
-<section id="ops" class="section">
+<section id="ops" class="section route-section route-section">
 <h2>30. Senior Engineering Operations & Governance</h2>
 <h3>Environment promotion</h3><p>Developer → CI checks → staging → automated smoke/E2E → controlled production release. Production credentials and data are isolated. Risky functionality is protected by feature flags.</p>
 <h3>Reliability targets</h3><table><tr><th>Signal</th><th>What to measure</th><th>Action</th></tr><tr><td>API latency</td><td>p50/p95/p99 by endpoint</td><td>Trace slow paths and tune DB/indexes.</td></tr><tr><td>Error rate</td><td>5xx and business failures</td><td>Alert on sustained threshold.</td></tr><tr><td>Queue health</td><td>depth, age, retries, DLQ</td><td>Scale workers or investigate poison jobs.</td></tr><tr><td>Payments</td><td>webhook lag, duplicates, reconciliation gaps</td><td>Alert immediately for financial inconsistency.</td></tr><tr><td>Classroom</td><td>join success, packet loss, bitrate, disconnect rate</td><td>Adapt quality and investigate infrastructure.</td></tr></table>
 <h3>Disaster recovery</h3><ul><li>Database backups + point-in-time recovery.</li><li>Immutable/encrypted audit backups retained 7 years.</li><li>Object storage versioning for critical assets.</li><li>Documented restore procedures.</li><li>Regular restore drills with measured recovery time and data-loss objectives.</li><li>Emergency access and break-glass procedures are audited.</li></ul>
 <h3>Threat model focus</h3><table><tr><th>Threat</th><th>Primary control</th></tr><tr><td>Cross-tenant data access</td><td>Tenant context + authorization + DB constraints + security tests.</td></tr><tr><td>Privilege escalation</td><td>Server-side RBAC, re-auth, Admin governance and audit.</td></tr><tr><td>Fake payment success</td><td>Signed webhook verification + idempotency + reconciliation.</td></tr><tr><td>Malicious upload</td><td>Type validation + malware scanning + private storage.</td></tr><tr><td>Stolen session</td><td>Short-lived credentials, revocation, suspicious login alerts and MFA for privileged users.</td></tr><tr><td>Audit tampering</td><td>Append-only chain + WORM + external checkpoints.</td></tr></table>
 </section>
-<section id="executive" class="section">
+<section id="executive" class="section route-section route-section">
 <h2>1. Executive Summary</h2>
 <div class="card">
 <p><b>Product:</b> a configurable SaaS platform where an organization creates its branded public website and manages students, guardians, teachers, enrollments, courses, schedules, attendance, learning progress, resources, communication, online classes and student fees from one authenticated application.</p>
+<p><b>Activation promise:</b> an existing academy should be able to upload its current data and reach a usable operating state in under an hour rather than manually recreating its database.</p>
 <p><b>First tenant:</b> Shalom School of Music. The architecture must never hard-code “music school”; the same platform must support dance, tuition, language, sports coaching and tutoring organizations.</p>
 <p><b>Core architectural rule:</b> organization data is isolated server-side. Every tenant-owned resource carries an <code>organizationId</code> or is reachable only through a tenant-owned parent. The client cannot choose another tenant by changing a URL, ID or request body.</p>
 <div class="note good"><b>North-star quality:</b> correctness before convenience. Financial state comes from server/webhook confirmation; authorization is server-enforced; audit events are append-only; scheduling conflicts are checked centrally; integrations are asynchronous and retryable.</div>
@@ -1149,11 +2090,16 @@ delivery status + retry / DLQ</pre>
 </div>
 </section>
 
-<section id="scope" class="section">
+<section id="scope" class="section route-section route-section">
 <h2>2. Scope & Product Principles</h2>
 <div class="two">
 <div class="card"><h3>In scope for V1</h3><ul>
 <li>Multi-tenant organizations and branding</li><li>Public configurable website with Three.js marketing layer</li>
+<li><b>Academy Launch onboarding and guided setup</b></li>
+<li><b>Smart Excel/CSV import: mapping, normalization, duplicate detection, validation and preview</b></li>
+<li><b>Bulk migration of students, guardians, teachers, courses, enrollments and recurring schedules</b></li>
+<li><b>White-glove migration workflow for assisted onboarding</b></li>
+<li><b>Term management, bulk invitations and automated re-enrollment</b></li>
 <li>Users, invitations, roles, MFA, sessions, recovery</li><li>Students, guardians and teachers</li><li>Courses, levels, enrollments and progress</li>
 <li>Recurring/custom scheduling, attendance and makeup classes</li><li>Branches, rooms and bookable resources</li><li>Google Calendar sync</li><li>WebRTC-based online classroom</li><li>Learning resources and secure file storage</li><li>Native messaging and notification framework</li><li>Official WhatsApp integration where supported</li><li>One-time/periodic student fees, invoices and receipts</li><li>SaaS subscription, plans, quotas and entitlements</li><li>Admin/teacher/student/parent analytics</li><li>Immutable audit and security monitoring</li>
 </ul></div>
@@ -1162,10 +2108,90 @@ delivery status + retry / DLQ</pre>
 </ul></div>
 </div>
 <h3>Design principles</h3>
-<ol><li><b>Tenant isolation by construction.</b></li><li><b>Server is authoritative.</b> Browser results are never trusted for permissions, payments or attendance-sensitive state.</li><li><b>History is preserved.</b> Financial and audit records are immutable or append-only where appropriate.</li><li><b>Integrations fail gracefully.</b> Queues, retries, idempotency and dead-letter handling are mandatory.</li><li><b>Configuration over code.</b> Plans, fields, taxes, branding and limits are data-driven.</li><li><b>Accessible responsive UX.</b> Desktop grids transform into mobile agenda/cards instead of becoming tiny desktop layouts.</li></ol>
+<ol><li><b>Tenant isolation by construction.</b></li><li><b>Fast time-to-value.</b> A typical academy with existing data should reach an operational state within 60 minutes; clean imports target 30 minutes or less.</li><li><b>Migration before manual entry.</b> Existing spreadsheets are treated as a migration source, not a retyping task.</li><li><b>Server is authoritative.</b> Browser results are never trusted for permissions, payments or attendance-sensitive state.</li><li><b>History is preserved.</b> Financial and audit records are immutable or append-only where appropriate.</li><li><b>Integrations fail gracefully.</b> Queues, retries, idempotency and dead-letter handling are mandatory.</li><li><b>Configuration over code.</b> Plans, fields, taxes, branding and limits are data-driven.</li><li><b>Accessible responsive UX.</b> Desktop grids transform into mobile agenda/cards instead of becoming tiny desktop layouts.</li></ol>
 </section>
 
-<section id="glossary" class="section">
+<section id="onboarding" class="section route-section route-section">
+<h2>2A. Academy Launch, Data Migration & Time-to-Value</h2>
+<div class="card">
+<h3>Objective</h3>
+<p>Academy Launch is a first-class V1 capability. New organizations should not face an empty dashboard followed by days of manual data entry. Existing academy spreadsheets and operational files are imported, cleaned, validated and converted into the platform's authoritative records.</p>
+<p><b>Primary KPI:</b> a typical academy with up to 200 students and reasonably structured source files should reach a usable operational state in <b>≤60 minutes</b>; clean files should target <b>≤30 minutes</b>.</p>
+</div>
+
+<h3>Launch flow</h3>
+<pre>CREATE ORGANIZATION
+        ↓
+UPLOAD EXCEL / CSV FILES
+        ↓
+SMART MAPPING + NORMALIZATION
+        ↓
+DUPLICATE / CONFLICT DETECTION
+        ↓
+PREVIEW + VALIDATION
+        ↓
+SAFE, IDEMPOTENT COMMIT
+        ↓
+SETUP CHECKLIST
+        ↓
+INVITE TEAM
+        ↓
+ACADEMY OPERATIONAL</pre>
+
+<div class="two">
+<div class="card"><h3>Smart spreadsheet importer</h3><ul>
+<li>Accept XLSX and CSV.</li>
+<li>Detect headers and suggest mappings to students, guardians, teachers, courses, enrollments and schedules.</li>
+<li>Normalize names, phone numbers, email addresses, dates, course names and common timetable formats.</li>
+<li>Detect likely duplicates and show merge/review candidates before commit.</li>
+<li>Support multiple sheets/files and retain source references for traceability.</li>
+<li>Allow unmapped columns to become organization custom fields or remain for review.</li>
+<li>Never silently discard ambiguous records.</li>
+</ul></div>
+<div class="card"><h3>Preview & validation</h3><ul>
+<li>Show counts before commit: students, guardians, teachers, courses, enrollments and schedules.</li>
+<li>Separate errors, warnings, duplicates and unmapped fields.</li>
+<li>Allow row-level corrections for common problems.</li>
+<li>Retry failed rows without duplicating successful rows.</li>
+<li>Provide an import summary and downloadable issue report.</li>
+<li>Record every migration job with actor, organization, mapping version, counts and outcome.</li>
+</ul></div>
+</div>
+
+<h3>Migration sources supported in V1</h3>
+<table>
+<tr><th>Source</th><th>Import behavior</th></tr>
+<tr><td>Student master</td><td>Students, contacts, DOB, custom fields and guardian relationships when available.</td></tr>
+<tr><td>Teacher list</td><td>Teacher profiles, contact details, qualifications/certifications where supplied and status.</td></tr>
+<tr><td>Courses / levels</td><td>Course catalog and levels.</td></tr>
+<tr><td>Timetable</td><td>Recurring schedule rules, teacher, branch/room, class type and delivery mode where available.</td></tr>
+<tr><td>Fee/billing sheet</td><td>Opening balances and historical references where safely mappable. Payment truth remains server/provider controlled.</td></tr>
+<tr><td>Multiple messy files</td><td>Correlate using strong identifiers plus conservative matching; ambiguous matches require review.</td></tr>
+</table>
+
+<div class="note warn"><b>Migration safety:</b> use staged import records before authoritative writes. No silent overwrites. Commit must be idempotent, tenant-scoped and rollback-safe when the commit fails.</div>
+
+<h3>White-glove migration</h3>
+<div class="card"><p>Early and complex customers can upload their files and request assisted migration. Support access is time-limited, reason-coded and fully audited. The customer remains the data owner. Manual interventions are measured so recurring importer problems can become product improvements.</p></div>
+
+<h3>Term management, dormant mode & re-enrollment</h3>
+<div class="two">
+<div class="card"><h3>Dormant / Maintenance Mode</h3><p>Seasonal academies can move to a lower-cost maintenance state that preserves data, schedules, resources and history instead of cancelling and recreating the account. Operational entitlements can be reduced while administrative data remains safe.</p></div>
+<div class="card"><h3>Automated re-enrollment</h3><p>For a new term, prepare eligible returning students, restore appropriate course/schedule patterns, send bulk invitations or confirmation requests, and require explicit confirmation when fees, schedules or terms changed.</p></div>
+</div>
+
+<h3>Success metrics</h3>
+<table>
+<tr><th>Metric</th><th>Target / purpose</th></tr>
+<tr><td>Time to operational</td><td>≤60 minutes for a typical 200-student migration; clean data target ≤30 minutes.</td></tr>
+<tr><td>Valid-row import rate</td><td>≥95% of valid source rows imported without manual re-entry.</td></tr>
+<tr><td>First-week activation</td><td>Customer completes at least one real schedule, attendance or payment workflow.</td></tr>
+<tr><td>Migration support load</td><td>Measure manual interventions per migration to prioritize importer improvements.</td></tr>
+<tr><td>Seasonal retention</td><td>Measure cancellation/pausing during breaks and adoption of Maintenance Mode/re-enrollment.</td></tr>
+</table>
+</section>
+
+<section id="glossary" class="section route-section route-section">
 <h2>3. Beginner Glossary</h2>
 <table><tr><th>Term</th><th>Plain-English meaning</th></tr>
 <tr><td>Tenant</td><td>One customer organization inside the shared SaaS platform.</td></tr>
@@ -1191,7 +2217,7 @@ delivery status + retry / DLQ</pre>
 </table>
 </section>
 
-<section id="roles" class="section">
+<section id="roles" class="section route-section route-section">
 <h2>4. Roles & Access Control</h2>
 <table><tr><th>Role</th><th>Purpose</th><th>Scope</th></tr>
 <tr><td>Platform Super Admin</td><td>Operates the SaaS platform and support/security functions.</td><td>All organizations/platform records, with audited support access.</td></tr>
@@ -1205,7 +2231,7 @@ delivery status + retry / DLQ</pre>
 </ul></div>
 </section>
 
-<section id="auth" class="section">
+<section id="auth" class="section route-section route-section">
 <h2>5. Authentication, Sessions & Account Security</h2>
 <div class="card"><h3>Login methods</h3><ul><li>Email + password</li><li>Phone + OTP</li><li>Google login</li></ul><p>Google Calendar OAuth is separate from Google login.</p></div>
 <div class="two">
@@ -1216,7 +2242,7 @@ delivery status + retry / DLQ</pre>
 <ul><li>Normal users who lose both email and phone: Admin-assisted identity verification.</li><li>Organization Admin recovery: Platform Super Admin approval after identity verification.</li><li>Platform Super Admin recovery: dedicated break-glass process outside normal app, multiple independent verification factors, full audit and notification.</li><li>Email/phone changes require re-authentication, new-contact verification, session revocation and security notification.</li></ul>
 </section>
 
-<section id="org" class="section">
+<section id="org" class="section route-section route-section">
 <h2>6. Organizations, Branding & Tenant Isolation</h2>
 <div class="card"><h3>Organization profile</h3><p>Name, logo, website, description, contact details, address, timezone, country, currency, brand colors, branches, courses, public-site configuration and subscription/entitlements.</p></div>
 <h3>Tenant isolation diagram</h3>
@@ -1225,7 +2251,7 @@ delivery status + retry / DLQ</pre>
 <h3>Public website</h3><p>Controlled sections/templates rather than an unrestricted page builder. Example sections: hero, about, courses, teachers, testimonials, gallery, contact, CTA, admissions. Three.js is isolated to public/marketing experiences and lazy-loaded so the admin application stays fast.</p>
 </section>
 
-<section id="students" class="section">
+<section id="students" class="section route-section route-section">
 <h2>7. Students, Guardians & Enrollment</h2>
 <h3>Student model</h3>
 <ul><li>Standard profile: name, DOB, gender, email, phone, address, profile photo.</li><li>Emergency contact: name, phone, relationship.</li><li>Organization-specific custom fields: Text, Number, Date, Dropdown, Multi-select, Checkbox, URL.</li><li>Custom fields are configuration-driven and support per-field visibility.</li><li>DOB determines whether guardian details are required using an organization-configurable adult threshold.</li></ul>
@@ -1238,19 +2264,19 @@ ACTIVE → CANCELLED / INACTIVE</pre>
 <div class="svgdiagram"><h4>Tenant isolation defense in depth</h4><svg viewBox="0 0 1100 330" role="img"><defs><marker id="arrow-2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6z" fill="#6b7280"/></marker></defs><rect x="20" y="120" width="180" height="65" rx="12" fill="#f7f8ff" stroke="#5b5ce2" stroke-width="2"/><text x="110.0" y="147" text-anchor="middle" class="t">Request</text><text x="110.0" y="168" text-anchor="middle" class="s">URL may contain org ID</text><rect x="240" y="120" width="180" height="65" rx="12" fill="#f7f8ff" stroke="#5b5ce2" stroke-width="2"/><text x="330.0" y="147" text-anchor="middle" class="t">Authenticated user</text><text x="330.0" y="168" text-anchor="middle" class="s">session identity</text><rect x="460" y="120" width="180" height="65" rx="12" fill="#f7f8ff" stroke="#5b5ce2" stroke-width="2"/><text x="550.0" y="147" text-anchor="middle" class="t">Tenant resolver</text><text x="550.0" y="168" text-anchor="middle" class="s">membership → org</text><rect x="680" y="120" width="180" height="65" rx="12" fill="#f7f8ff" stroke="#5b5ce2" stroke-width="2"/><text x="770.0" y="147" text-anchor="middle" class="t">Authorization</text><text x="770.0" y="168" text-anchor="middle" class="s">role + relationship</text><rect x="900" y="120" width="180" height="65" rx="12" fill="#f7f8ff" stroke="#5b5ce2" stroke-width="2"/><text x="990.0" y="147" text-anchor="middle" class="t">Scoped DB query</text><text x="990.0" y="168" text-anchor="middle" class="s">organization_id</text><line x1="200" y1="152.5" x2="240" y2="152.5" class="arr"/><line x1="420" y1="152.5" x2="460" y2="152.5" class="arr"/><line x1="640" y1="152.5" x2="680" y2="152.5" class="arr"/><line x1="860" y1="152.5" x2="900" y2="152.5" class="arr"/></svg></div>
 </section>
 
-<section id="teachers" class="section">
+<section id="teachers" class="section route-section route-section">
 <h2>8. Teachers</h2>
 <ul><li>Employment types: Full-time, Part-time, Contract, Freelancer.</li><li>Soft deactivation only in V1; no physical deletion.</li><li>Deactivation immediately revokes org access, sessions, API/WebSocket/classroom access.</li><li>Reactivation restores normal login with existing credentials.</li><li>Admin-managed teaching capabilities: course + optional level; explicit assignment required for new courses/levels.</li><li>Capabilities do not expire automatically.</li><li>Capacity is checked using both maximum active students and available teaching hours.</li><li>Admin can override capacity/conflict with reason and audit.</li><li>Teacher custom fields use the same flexible field system as students.</li><li>Structured qualifications/certifications and private documents are supported.</li><li>Teacher can edit own permitted profile fields; Admin controls sensitive/employment fields.</li><li>Public profile is optional, uses explicitly public-enabled fields, and teacher edits require Admin approval before publication.</li><li>Inactive teachers are hidden publicly by default, with Admin override.</li></ul>
 <div class="note">Teacher/student access is relationship-based through Enrollment/Learning Program, not a direct “teacher owns student” link. This supports multiple teachers, courses and branches for one student.</div>
 </section>
 
-<section id="academics" class="section">
+<section id="academics" class="section route-section route-section">
 <h2>9. Courses, Levels & Learning Progress</h2>
 <ul><li>Only Admin manages course catalog.</li><li>Courses may be simple (“Guitar”) or structured (“Guitar → Beginner → Intermediate → Advanced”).</li><li>Teachers select only capabilities explicitly assigned by Admin.</li><li>Formal prerequisites and formal grading are later features.</li><li>Progress combines standard curriculum/checklists with teacher-created custom items.</li></ul>
 <div class="card"><h3>Progress record types</h3><ul><li>Curriculum item / checklist</li><li>Lesson note</li><li>Homework</li><li>Next lesson</li><li>Teacher feedback</li></ul><p>Visibility: Admin + assigned teachers + student + all linked guardians.</p></div>
 </section>
 
-<section id="scheduling" class="section">
+<section id="scheduling" class="section route-section route-section">
 <h2>10. Scheduling, Classes, Attendance & Calendar</h2>
 <h3>Separate planning from actual events</h3>
 <table><tr><th>Entity</th><th>Purpose</th></tr>
@@ -1270,7 +2296,7 @@ ACTIVE → CANCELLED / INACTIVE</pre>
 <h3>Availability</h3><p>Teacher availability windows plus manual overrides. Scheduler checks teacher, student, room, generic resource/equipment and online classroom conflicts. Group participants are allowed to share the same session.</p>
 </section>
 
-<section id="classroom" class="section">
+<section id="classroom" class="section route-section route-section">
 <h2>11. WebRTC Online Classroom</h2>
 <p>The platform owns the classroom UX and uses WebRTC. For reliability and multi-participant scaling, use an SFU/media-server layer rather than pure browser-to-browser mesh.</p>
 <div class="svgdiagram"><h4>Conflict detection flow</h4><svg viewBox="0 0 1100 330" role="img"><defs><marker id="arrow-4" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L10,3 L0,6z" fill="#6b7280"/></marker></defs><rect x="20" y="120" width="170" height="65" rx="12" fill="#f7f8ff" stroke="#5b5ce2" stroke-width="2"/><text x="105.0" y="147" text-anchor="middle" class="t">Create / move</text><text x="105.0" y="168" text-anchor="middle" class="s">session</text><rect x="230" y="120" width="170" height="65" rx="12" fill="#f7f8ff" stroke="#5b5ce2" stroke-width="2"/><text x="315.0" y="147" text-anchor="middle" class="t">Teacher check</text><text x="315.0" y="168" text-anchor="middle" class="s">overlap</text><rect x="440" y="120" width="170" height="65" rx="12" fill="#f7f8ff" stroke="#5b5ce2" stroke-width="2"/><text x="525.0" y="147" text-anchor="middle" class="t">Student check</text><text x="525.0" y="168" text-anchor="middle" class="s">overlap</text><rect x="650" y="120" width="170" height="65" rx="12" fill="#f7f8ff" stroke="#5b5ce2" stroke-width="2"/><text x="735.0" y="147" text-anchor="middle" class="t">Resource check</text><text x="735.0" y="168" text-anchor="middle" class="s">room/equipment</text><rect x="860" y="120" width="200" height="65" rx="12" fill="#f7f8ff" stroke="#5b5ce2" stroke-width="2"/><text x="960.0" y="147" text-anchor="middle" class="t">Commit or override</text><text x="960.0" y="168" text-anchor="middle" class="s">reason + audit</text><line x1="190" y1="152.5" x2="230" y2="152.5" class="arr"/><line x1="400" y1="152.5" x2="440" y2="152.5" class="arr"/><line x1="610" y1="152.5" x2="650" y2="152.5" class="arr"/><line x1="820" y1="152.5" x2="860" y2="152.5" class="arr"/></svg></div>
@@ -1278,14 +2304,14 @@ ACTIVE → CANCELLED / INACTIVE</pre>
 <div class="note warn"><b>Important implementation note:</b> “Build our own classroom” should mean owning the application, authorization, UX and orchestration. Reusing mature open-source media infrastructure such as an SFU/TURN implementation is safer than implementing RTP/media routing from scratch.</div>
 </section>
 
-<section id="resources" class="section">
+<section id="resources" class="section route-section route-section">
 <h2>12. Learning Resources & File Storage</h2>
 <p>Resource scopes: organization library, student/enrollment library and class-specific resources. Examples include sheet music, PDFs, books, videos, documents and links.</p>
 <div class="diagram svg-diagram"><svg class="arch-svg" viewBox="0 0 846 458" role="img" aria-label="System flow" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow1-5" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7c83e6"/></marker></defs><defs><filter id="shadow-5"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".12"/></filter></defs><text x="24" y="34" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="800" fill="#172033">System flow</text><g filter="url(#shadow-5)"><rect x="24" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>User</tspan></text></g><g filter="url(#shadow-5)"><rect x="298" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Resource API</tspan></text></g><g filter="url(#shadow-5)"><rect x="572" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>API</tspan></text></g><g filter="url(#shadow-5)"><rect x="24" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Permission Check</tspan></text></g><g filter="url(#shadow-5)"><rect x="298" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>AUTH</tspan></text></g><g filter="url(#shadow-5)"><rect x="572" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>(Resource Metadata DB)</tspan></text></g><g filter="url(#shadow-5)"><rect x="24" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Malware Scan Queue</tspan></text></g><g filter="url(#shadow-5)"><rect x="298" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>(Private Object Storage)</tspan></text></g><g filter="url(#shadow-5)"><rect x="572" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>U</tspan></text></g><g filter="url(#shadow-5)"><rect x="24" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>STORE</tspan></text></g><g filter="url(#shadow-5)"><rect x="298" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Optional private CDN</tspan></text></g><line x1="274" y1="88.0" x2="298" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow1-5)"/><line x1="548" y1="88.0" x2="572" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow1-5)"/><line x1="697.0" y1="124" x2="149.0" y2="146" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow1-5)"/><line x1="274" y1="182.0" x2="298" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow1-5)"/><line x1="548" y1="182.0" x2="572" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow1-5)"/><line x1="697.0" y1="218" x2="149.0" y2="240" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow1-5)"/><line x1="274" y1="276.0" x2="298" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow1-5)"/><line x1="548" y1="276.0" x2="572" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow1-5)"/><line x1="697.0" y1="312" x2="149.0" y2="334" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow1-5)"/><line x1="274" y1="370.0" x2="298" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow1-5)"/></svg></div>
 <ul><li>DB stores metadata; object storage stores bytes.</li><li>Upload progress.</li><li>File size/type limits and plan quotas.</li><li>Private storage with short-lived signed URLs.</li><li>Malware scanning before making a file available.</li><li>Download/stream permissions.</li><li>Shared organization library reduces duplicate uploads.</li><li>Never expose raw storage credentials to browsers.</li></ul>
 </section>
 
-<section id="messaging" class="section">
+<section id="messaging" class="section route-section route-section">
 <h2>13. Messaging, Notifications & WhatsApp</h2>
 <h3>Native messaging is the core channel</h3>
 <ul><li>Teacher ↔ student/parent.</li><li>Admin ↔ anyone in organization.</li><li>Class-specific conversations.</li><li>Announcements.</li><li>Attachments: images, PDFs, videos and links.</li><li>Read/unread state and notifications.</li><li>Class reminders, fee reminders and system messages.</li></ul>
@@ -1296,7 +2322,7 @@ ACTIVE → CANCELLED / INACTIVE</pre>
 <p>The product should therefore keep native messaging as a first-class fallback. If an official group-posting capability becomes available and is authorized for the tenant, implement it behind the <code>WHATSAPP_GROUP</code> provider adapter.</p>
 </section>
 
-<section id="finance" class="section">
+<section id="finance" class="section route-section route-section">
 <h2>14. Student Finance</h2>
 <h3>Fee and payment rules</h3><ul><li>One-time and periodic fees.</li><li>Partial or full payments.</li><li>Multiple guardians can pay the same student's balance.</li><li>Payment belongs to the student/fee record; payer is recorded separately.</li><li>Payment success is confirmed by gateway webhook/server verification, never only by browser redirect.</li><li>Gateway interface is abstracted so provider can change later.</li><li>Refunds are planned as a supported transaction type; original payment remains in history.</li></ul>
 <h3>Teacher earnings</h3><ul><li>Fixed amount per completed class OR percentage of student revenue.</li><li>Can vary by teacher/course.</li><li>Calculated from completed classes/revenue according to configured rules.</li><li>No payroll processing in V1.</li></ul>
@@ -1306,17 +2332,17 @@ ACTIVE → CANCELLED / INACTIVE</pre>
 <div class="diagram svg-diagram"><svg class="arch-svg" viewBox="0 0 572 270" role="img" aria-label="Interaction sequence" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow2-6" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7c83e6"/></marker></defs><defs><filter id="shadow-6"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".12"/></filter></defs><text x="24" y="34" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="800" fill="#172033">Interaction sequence</text><g filter="url(#shadow-6)"><rect x="24" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>PG</tspan></text></g><g filter="url(#shadow-6)"><rect x="298" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>&gt;UI: Checkout reference</tspan></text></g><g filter="url(#shadow-6)"><rect x="24" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>API</tspan></text></g><g filter="url(#shadow-6)"><rect x="298" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>&gt;UI: Confirmed status</tspan></text></g><line x1="274" y1="88.0" x2="298" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow2-6)"/><line x1="423.0" y1="124" x2="149.0" y2="146" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow2-6)"/><line x1="274" y1="182.0" x2="298" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow2-6)"/></svg></div>
 </section>
 
-<section id="saas" class="section">
+<section id="saas" class="section route-section route-section">
 <h2>15. SaaS Billing, Plans & Entitlements</h2>
 <div class="card"><h3>Plan model</h3><p>Support Trial, Starter, Growth, Professional and Enterprise/custom. Exact prices are commercial configuration, not business logic.</p></div>
 <h3>Entitlement architecture</h3>
 <pre>Plan → Entitlements → Organization Overrides → Usage Enforcement</pre>
 <p>Typical entitlements: <code>maxTeachers</code>, <code>maxStudents</code>, <code>storageGB</code>, <code>monthlyOnlineMinutes</code>, <code>recordingStorageGB</code>, feature flags.</p>
-<h3>Lifecycle</h3><pre>TRIAL → ACTIVE → GRACE_PERIOD → RESTRICTED → SUSPENDED → DELETED</pre>
-<ul><li>Trial default: 14 days.</li><li>Cancellation retains access until current billing period ends.</li><li>Afterward restricted/read-only, then suspended if applicable.</li><li>Data is preserved according to plan retention.</li><li>Organization deletion requires Admin request + Platform Super Admin confirmation.</li><li>Monthly, yearly and custom/enterprise billing supported.</li><li>Plan upgrade does not automatically increase organization Admin limit.</li><li>Downgrade: existing Admins remain, but new Admin additions are blocked above the new limit.</li></ul>
+<h3>Lifecycle</h3><pre>TRIAL → ACTIVE ⇄ DORMANT_MAINTENANCE → GRACE_PERIOD → RESTRICTED → SUSPENDED → DELETED</pre>
+<ul><li>Trial default: 14 days.</li><li><b>Dormant/Maintenance Mode:</b> optional lower-cost seasonal state that preserves tenant data and configuration while reducing active operational entitlements.</li><li>Cancellation retains access until current billing period ends.</li><li>Afterward restricted/read-only, then suspended if applicable.</li><li>Data is preserved according to plan retention.</li><li>Organization deletion requires Admin request + Platform Super Admin confirmation.</li><li>Monthly, yearly and custom/enterprise billing supported.</li><li>Plan upgrade does not automatically increase organization Admin limit.</li><li>Downgrade: existing Admins remain, but new Admin additions are blocked above the new limit.</li></ul>
 </section>
 
-<section id="analytics" class="section">
+<section id="analytics" class="section route-section route-section">
 <h2>16. Analytics & Reporting</h2>
 <table><tr><th>Audience</th><th>Metrics</th></tr>
 <tr><td>Admin</td><td>Teachers, students, classes, revenue, pending fees, missed classes, active/inactive students, teacher workload, utilization, course mix, growth, payment success/failure.</td></tr>
@@ -1326,7 +2352,7 @@ ACTIVE → CANCELLED / INACTIVE</pre>
 <p>For V1, analytics can use transactional data plus indexed reporting queries. As volume grows, introduce read-optimized reporting tables/materialized views or a warehouse without changing the product API contract.</p>
 </section>
 
-<section id="architecture" class="section">
+<section id="architecture" class="section route-section route-section">
 <h2>17. System Architecture</h2>
 <div class="diagram svg-diagram"><svg class="arch-svg" viewBox="0 0 846 458" role="img" aria-label="System flow" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow3-7" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7c83e6"/></marker></defs><defs><filter id="shadow-7"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".12"/></filter></defs><text x="24" y="34" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="800" fill="#172033">System flow</text><g filter="url(#shadow-7)"><rect x="24" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Public Website React/Next-style UI + Three.js</tspan></text></g><g filter="url(#shadow-7)"><rect x="298" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>CDN / WAF</tspan></text></g><g filter="url(#shadow-7)"><rect x="572" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Authenticated Web App Responsive UI</tspan></text></g><g filter="url(#shadow-7)"><rect x="24" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>EDGE</tspan></text></g><g filter="url(#shadow-7)"><rect x="298" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Mobile Web / PWA</tspan></text></g><g filter="url(#shadow-7)"><rect x="572" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Backend API</tspan></text></g><g filter="url(#shadow-7)"><rect x="24" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>API</tspan></text></g><g filter="url(#shadow-7)"><rect x="298" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Auth &amp; Session</tspan></text></g><g filter="url(#shadow-7)"><rect x="572" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>RBAC + Tenant Context</tspan></text></g><g filter="url(#shadow-7)"><rect x="24" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Organization</tspan></text></g><g filter="url(#shadow-7)"><rect x="298" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Users / Students / Teachers / Guardians</tspan></text></g><g filter="url(#shadow-7)"><rect x="572" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Courses / Enrollment / Progress</tspan></text></g><line x1="274" y1="88.0" x2="298" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/><line x1="548" y1="88.0" x2="572" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/><line x1="697.0" y1="124" x2="149.0" y2="146" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/><line x1="274" y1="182.0" x2="298" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/><line x1="548" y1="182.0" x2="572" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/><line x1="697.0" y1="218" x2="149.0" y2="240" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/><line x1="274" y1="276.0" x2="298" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/><line x1="548" y1="276.0" x2="572" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/><line x1="697.0" y1="312" x2="149.0" y2="334" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/><line x1="274" y1="370.0" x2="298" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/><line x1="548" y1="370.0" x2="572" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow3-7)"/></svg></div>
 <h3>Recommended implementation shape</h3>
@@ -1358,17 +2384,23 @@ analytics
 audit
 integrations
 feature-flags
-files</pre>
+files
+onboarding
+imports
+migration-jobs
+term-management
+re-enrollment</pre>
 </section>
 
-<section id="data" class="section">
+<section id="data" class="section route-section route-section">
 <h2>18. Data Model</h2>
+<div class="card"><h3>Migration data model</h3><p>Use tenant-scoped staging concepts such as <code>import_jobs</code>, <code>import_files</code>, <code>import_mappings</code>, <code>import_rows</code>, <code>import_conflicts</code>, <code>import_commit_runs</code>, <code>terms</code> and <code>re_enrollment_campaigns</code>. Staging records are isolated from authoritative records until explicit commit, are idempotent and auditable, and are purged under a documented retention policy.</p></div>
 <div class="diagram svg-diagram"><svg class="arch-svg" viewBox="0 0 846 458" role="img" aria-label="Architecture diagram" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow4-8" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7c83e6"/></marker></defs><defs><filter id="shadow-8"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".12"/></filter></defs><text x="24" y="34" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="800" fill="#172033">Architecture diagram</text><g filter="url(#shadow-8)"><rect x="24" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>ORGANIZATION</tspan></text></g><g filter="url(#shadow-8)"><rect x="298" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>o{ MEMBERSHIP : has</tspan></text></g><g filter="url(#shadow-8)"><rect x="572" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>USER</tspan></text></g><g filter="url(#shadow-8)"><rect x="24" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>o{ MEMBERSHIP : joins</tspan></text></g><g filter="url(#shadow-8)"><rect x="298" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>o{ STUDENT : owns</tspan></text></g><g filter="url(#shadow-8)"><rect x="572" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>o{ TEACHER : owns</tspan></text></g><g filter="url(#shadow-8)"><rect x="24" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>STUDENT }o</tspan></text></g><g filter="url(#shadow-8)"><rect x="298" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>o{ GUARDIAN : linked_to</tspan></text></g><g filter="url(#shadow-8)"><rect x="572" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>o{ COURSE : offers</tspan></text></g><g filter="url(#shadow-8)"><rect x="24" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>COURSE</tspan></text></g><g filter="url(#shadow-8)"><rect x="298" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>o{ COURSE_LEVEL : has</tspan></text></g><g filter="url(#shadow-8)"><rect x="572" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>STUDENT</tspan></text></g><line x1="274" y1="88.0" x2="298" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/><line x1="548" y1="88.0" x2="572" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/><line x1="697.0" y1="124" x2="149.0" y2="146" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/><line x1="274" y1="182.0" x2="298" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/><line x1="548" y1="182.0" x2="572" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/><line x1="697.0" y1="218" x2="149.0" y2="240" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/><line x1="274" y1="276.0" x2="298" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/><line x1="548" y1="276.0" x2="572" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/><line x1="697.0" y1="312" x2="149.0" y2="334" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/><line x1="274" y1="370.0" x2="298" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/><line x1="548" y1="370.0" x2="572" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow4-8)"/></svg></div>
 <h3>Critical entity rules</h3>
 <ul><li>Use immutable IDs such as UUID/ULID.</li><li>All tenant-owned tables include <code>organization_id</code> unless ownership is unambiguously inherited through a tenant-owned parent; denormalizing it onto high-volume tables is recommended for safer filtering and indexing.</li><li>Foreign keys enforce relationships.</li><li>Unique constraints prevent duplicate memberships/invitations and other business duplicates.</li><li>Soft deletion/deactivation is used where history matters; never hard-delete financial/audit history.</li><li>Money uses integer minor units or fixed-precision decimal, never floating point.</li><li>All financial rows store currency code.</li><li>All timestamps stored UTC.</li></ul>
 </section>
 
-<section id="security" class="section">
+<section id="security" class="section route-section route-section">
 <h2>19. Security Architecture</h2>
 <div class="diagram svg-diagram"><svg class="arch-svg" viewBox="0 0 846 458" role="img" aria-label="System flow" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow5-9" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7c83e6"/></marker></defs><defs><filter id="shadow-9"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".12"/></filter></defs><text x="24" y="34" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="800" fill="#172033">System flow</text><g filter="url(#shadow-9)"><rect x="24" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Browser</tspan></text></g><g filter="url(#shadow-9)"><rect x="298" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>HTTPS/TLS</tspan></text></g><g filter="url(#shadow-9)"><rect x="572" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>TLS</tspan></text></g><g filter="url(#shadow-9)"><rect x="24" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>WAF + Rate Limits</tspan></text></g><g filter="url(#shadow-9)"><rect x="298" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>WAF</tspan></text></g><g filter="url(#shadow-9)"><rect x="572" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>API</tspan></text></g><g filter="url(#shadow-9)"><rect x="24" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Authentication</tspan></text></g><g filter="url(#shadow-9)"><rect x="298" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>AUTH</tspan></text></g><g filter="url(#shadow-9)"><rect x="572" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>MFA</tspan></text></g><g filter="url(#shadow-9)"><rect x="24" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Authorization</tspan></text></g><g filter="url(#shadow-9)"><rect x="298" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>AUTHZ</tspan></text></g><g filter="url(#shadow-9)"><rect x="572" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Tenant Scope</tspan></text></g><line x1="274" y1="88.0" x2="298" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/><line x1="548" y1="88.0" x2="572" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/><line x1="697.0" y1="124" x2="149.0" y2="146" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/><line x1="274" y1="182.0" x2="298" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/><line x1="548" y1="182.0" x2="572" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/><line x1="697.0" y1="218" x2="149.0" y2="240" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/><line x1="274" y1="276.0" x2="298" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/><line x1="548" y1="276.0" x2="572" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/><line x1="697.0" y1="312" x2="149.0" y2="334" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/><line x1="274" y1="370.0" x2="298" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/><line x1="548" y1="370.0" x2="572" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow5-9)"/></svg></div>
 <h3>Mandatory controls</h3>
@@ -1376,7 +2408,7 @@ files</pre>
 <div class="note danger"><b>Never put secrets in frontend code.</b> Payment secret keys, database credentials, OAuth client secrets, TURN credentials and encryption keys belong server-side or in a managed secret system.</div>
 </section>
 
-<section id="audit" class="section">
+<section id="audit" class="section route-section route-section">
 <h2>20. Audit, Security Logging & Integrity</h2>
 <h3>Retention and access</h3><ul><li>Core audit retention: 7 years.</li><li>Organization Admins see only their organization's logs.</li><li>Platform Super Admin sees platform-wide logs.</li><li>CSV export is async with a temporary signed URL expiring after 1 hour.</li><li>Generated export files are deleted within 24 hours after link expiry.</li><li>Default export limit: 100,000 records, configurable.</li><li>Security-sensitive export requires separate permission.</li></ul>
 <h3>Audit event fields</h3><pre>event_id
@@ -1407,7 +2439,7 @@ event_hash</pre>
 <ul><li>One chain per organization plus a separate platform-level chain.</li><li>Daily integrity checkpoints.</li><li>Critical events trigger immediate external checkpoint.</li><li>Automatic daily verification.</li><li>Verification failure → forensic external checkpoint, alert Platform Super Admin, mark chain compromised, preserve evidence.</li><li>Organization Admin sees a security warning but not sensitive investigation details.</li><li>Compromised chain is permanently marked compromised and frozen; a new chain begins.</li><li>Manual verification available to Platform Super Admin and authorized Organization Admin for their own org; verification itself is audited.</li><li>External checkpoints use immutable cloud WORM + third-party tamper-proof integrity service.</li><li>Audit encryption: platform KMS for normal plans; customer-managed keys for Enterprise.</li><li>Only security/infrastructure service accounts can access encryption keys.</li><li>Automatic KMS key rotation; historical rows retain key-version references.</li><li>India data residency by default; Enterprise regional selection later.</li><li>Encrypted + immutable backups retained 7 years.</li></ul>
 </section>
 
-<section id="integrations" class="section">
+<section id="integrations" class="section route-section route-section">
 <h2>21. Integrations</h2>
 <h3>Google Calendar</h3>
 <ul><li>Platform calendar is source of truth.</li><li>User connects Google Calendar through separate OAuth.</li><li>Adult student connects own calendar.</li><li>Child's guardian account can connect.</li><li>Connected users receive automatic event create/update/cancel.</li><li>Disconnected users receive calendar invitation or <code>.ics</code> fallback.</li><li>Updates modify the existing external event using stored external event ID; never create duplicates.</li><li>Sync jobs are idempotent and retryable.</li></ul>
@@ -1416,21 +2448,21 @@ event_hash</pre>
 <h3>WhatsApp</h3><p>Implement a provider adapter. Keep compliance, opt-in, templates, message-window rules and provider capability checks outside core messaging logic.</p>
 </section>
 
-<section id="reliability" class="section">
+<section id="reliability" class="section route-section route-section">
 <h2>22. Reliability, Observability & Failure Handling</h2>
 <div class="diagram svg-diagram"><svg class="arch-svg" viewBox="0 0 846 458" role="img" aria-label="System flow" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow8-12" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7c83e6"/></marker></defs><defs><filter id="shadow-12"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".12"/></filter></defs><text x="24" y="34" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="800" fill="#172033">System flow</text><g filter="url(#shadow-12)"><rect x="24" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Request</tspan></text></g><g filter="url(#shadow-12)"><rect x="298" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Structured Logs</tspan></text></g><g filter="url(#shadow-12)"><rect x="572" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>REQ</tspan></text></g><g filter="url(#shadow-12)"><rect x="24" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Distributed Trace</tspan></text></g><g filter="url(#shadow-12)"><rect x="298" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Metrics</tspan></text></g><g filter="url(#shadow-12)"><rect x="572" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Error</tspan></text></g><g filter="url(#shadow-12)"><rect x="24" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Alerting</tspan></text></g><g filter="url(#shadow-12)"><rect x="298" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Background Job</tspan></text></g><g filter="url(#shadow-12)"><rect x="572" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Exponential Backoff</tspan></text></g><g filter="url(#shadow-12)"><rect x="24" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>RETRY</tspan></text></g><g filter="url(#shadow-12)"><rect x="298" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>JOB</tspan></text></g><g filter="url(#shadow-12)"><rect x="572" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Dead Letter Queue</tspan></text></g><line x1="274" y1="88.0" x2="298" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/><line x1="548" y1="88.0" x2="572" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/><line x1="697.0" y1="124" x2="149.0" y2="146" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/><line x1="274" y1="182.0" x2="298" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/><line x1="548" y1="182.0" x2="572" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/><line x1="697.0" y1="218" x2="149.0" y2="240" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/><line x1="274" y1="276.0" x2="298" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/><line x1="548" y1="276.0" x2="572" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/><line x1="697.0" y1="312" x2="149.0" y2="334" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/><line x1="274" y1="370.0" x2="298" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/><line x1="548" y1="370.0" x2="572" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow8-12)"/></svg></div>
 <h3>Required practices</h3><ul><li>Structured JSON logs.</li><li>Correlation/request ID on every relevant request and audit event.</li><li>Metrics: latency, error rate, queue depth, job retries, payment webhook failures, calendar sync failures, classroom connection quality, storage usage.</li><li>Distributed tracing across API → DB → queue → provider → audit where feasible.</li><li>Timeouts on external calls.</li><li>Retries only for transient failures with exponential backoff and jitter.</li><li>Dead-letter queues for exhausted jobs.</li><li>Idempotency keys for financial/integration operations.</li><li>Health/readiness endpoints.</li><li>Graceful shutdown for workers.</li></ul>
 <h3>Availability philosophy</h3><p>Core operations must not depend synchronously on non-critical third parties. Example: creating a class succeeds even if Google Calendar is temporarily unavailable; calendar sync becomes “pending/retry”.</p>
 </section>
 
-<section id="deployment" class="section">
+<section id="deployment" class="section route-section route-section">
 <h2>23. Deployment & Environment Architecture</h2>
 <div class="diagram svg-diagram"><svg class="arch-svg" viewBox="0 0 846 458" role="img" aria-label="System flow" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrow9-13" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 z" fill="#7c83e6"/></marker></defs><defs><filter id="shadow-13"><feDropShadow dx="0" dy="3" stdDeviation="4" flood-opacity=".12"/></filter></defs><text x="24" y="34" font-family="Inter,Arial,sans-serif" font-size="18" font-weight="800" fill="#172033">System flow</text><g filter="url(#shadow-13)"><rect x="24" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Developer</tspan></text></g><g filter="url(#shadow-13)"><rect x="298" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Git Repository</tspan></text></g><g filter="url(#shadow-13)"><rect x="572" y="52" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="82" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>GIT</tspan></text></g><g filter="url(#shadow-13)"><rect x="24" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>CI: lint/test/build/security</tspan></text></g><g filter="url(#shadow-13)"><rect x="298" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>CI</tspan></text></g><g filter="url(#shadow-13)"><rect x="572" y="146" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="176" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Staging</tspan></text></g><g filter="url(#shadow-13)"><rect x="24" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>STG</tspan></text></g><g filter="url(#shadow-13)"><rect x="298" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>E2E + Smoke</tspan></text></g><g filter="url(#shadow-13)"><rect x="572" y="240" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="270" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>E2E</tspan></text></g><g filter="url(#shadow-13)"><rect x="24" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="40" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>Production</tspan></text></g><g filter="url(#shadow-13)"><rect x="298" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="314" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>PROD</tspan></text></g><g filter="url(#shadow-13)"><rect x="572" y="334" rx="14" width="250" height="72" fill="#fff" stroke="#dfe4ef"/><text x="588" y="364" font-family="Inter,Arial,sans-serif" font-size="13" font-weight="700" fill="#263149"><tspan>CDN/WAF</tspan></text></g><line x1="274" y1="88.0" x2="298" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/><line x1="548" y1="88.0" x2="572" y2="88.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/><line x1="697.0" y1="124" x2="149.0" y2="146" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/><line x1="274" y1="182.0" x2="298" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/><line x1="548" y1="182.0" x2="572" y2="182.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/><line x1="697.0" y1="218" x2="149.0" y2="240" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/><line x1="274" y1="276.0" x2="298" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/><line x1="548" y1="276.0" x2="572" y2="276.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/><line x1="697.0" y1="312" x2="149.0" y2="334" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/><line x1="274" y1="370.0" x2="298" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/><line x1="548" y1="370.0" x2="572" y2="370.0" stroke="#7c83e6" stroke-width="2" marker-end="url(#arrow9-13)"/></svg></div>
 <h3>Environments</h3><ul><li>Local development.</li><li>Shared development/integration.</li><li>Staging: production-like data shapes, synthetic/test data only.</li><li>Production: protected deployments and separate credentials.</li></ul>
 <h3>Production baseline</h3><ul><li>Managed PostgreSQL with automated backups and point-in-time recovery.</li><li>Redis-compatible store for caching/rate limiting/queues where appropriate.</li><li>Private object storage with lifecycle policies.</li><li>CDN/WAF in front of public assets and APIs as appropriate.</li><li>Secrets manager/KMS.</li><li>Separate worker processes.</li><li>SFU/TURN infrastructure for classroom.</li><li>Infrastructure-as-code once environments stabilize.</li></ul>
 </section>
 
-<section id="api" class="section">
+<section id="api" class="section route-section route-section">
 <h2>24. API Conventions</h2>
 <div class="card"><h3>Example REST resource layout</h3><pre>GET    /api/v1/organizations/{orgId}/students
 POST   /api/v1/organizations/{orgId}/students
@@ -1450,7 +2482,7 @@ POST   /api/v1/webhooks/payments/{provider}</pre>
 <h3>API rules</h3><ul><li>Consistent response/error envelope.</li><li>Pagination for lists.</li><li>Filtering/sorting with allowlists.</li><li>Optimistic concurrency/version field for mutable resources.</li><li>Idempotency keys for operations that create financial or external side effects.</li><li>Request validation at the API boundary.</li><li>Authorization after authentication and before data access.</li><li>Never expose internal stack traces or secrets.</li><li>OpenAPI contract generated/maintained as part of the build.</li></ul>
 </section>
 
-<section id="testing" class="section">
+<section id="testing" class="section route-section route-section">
 <h2>25. Testing Strategy</h2>
 <table><tr><th>Layer</th><th>What it proves</th><th>Examples</th></tr>
 <tr><td>Unit</td><td>Small business rules work.</td><td>fee calculation, capacity, age threshold, permission predicates.</td></tr>
@@ -1460,14 +2492,15 @@ POST   /api/v1/webhooks/payments/{provider}</pre>
 <tr><td>Load</td><td>System remains stable under expected load.</td><td>calendar, notifications, classroom signaling, file uploads.</td></tr>
 <tr><td>Failure</td><td>External/service failures are safe.</td><td>duplicate webhook, Google outage, queue retry, SFU disconnect.</td></tr>
 </table>
+<h3>Migration / onboarding tests</h3><ul><li>Messy XLSX/CSV headers map correctly or are explicitly flagged.</li><li>Duplicate records do not silently create duplicate authoritative students/guardians.</li><li>Re-running an import is idempotent.</li><li>Failed rows retry without duplicating successful rows.</li><li>Ambiguous matches require human review.</li><li>Commit failure does not leave partial authoritative data.</li><li>Import jobs cannot cross organization boundaries.</li><li>Re-enrollment does not reactivate cancelled students without configured confirmation rules.</li><li>Dormant organizations restore correctly when reactivated.</li></ul>
 <h3>Non-negotiable security tests</h3><ul><li>Every protected endpoint tested with another organization's ID.</li><li>Teacher cannot access unrelated student's private fields.</li><li>Guardian cannot access another child's data.</li><li>Admin permissions cannot be self-granted.</li><li>Last-Admin protection cannot be bypassed.</li><li>Payment redirect alone cannot mark payment successful.</li><li>Audit records cannot be updated/deleted through application APIs.</li><li>Signed file URLs expire.</li><li>Deactivated teacher loses sessions and classroom access.</li></ul>
 </section>
 
-<section id="delivery" class="section">
+<section id="delivery" class="section route-section route-section">
 <h2>26. Implementation Roadmap</h2>
 <div class="card"><h3>Phase 0 — Foundation</h3><p>Repository, environments, CI/CD, database migrations, config/secret handling, logging, error handling, tenant context, base UI shell, design tokens, OpenAPI.</p></div>
-<div class="card"><h3>Phase 1 — Identity & Organizations</h3><p>Organizations, memberships, roles, invitations, auth methods, MFA, sessions, recovery, Admin governance, branding, feature flags and entitlements.</p></div>
-<div class="card"><h3>Phase 2 — People & Academics</h3><p>Students, guardians, teachers, custom fields, capabilities, courses, levels, enrollments, progress and visibility rules.</p></div>
+<div class="card"><h3>Phase 1 — Identity, Organizations & Academy Launch</h3><p>Organizations, memberships, roles, invitations, auth methods, MFA, sessions, recovery, Admin governance, branding, feature flags and entitlements. Build the Academy Launch wizard, XLSX/CSV importer, mapping/normalization, duplicate detection, staged import preview, idempotent commit, migration audit trail and assisted white-glove migration workflow.</p></div>
+<div class="card"><h3>Phase 2 — People, Academics & Terms</h3><p>Students, guardians, teachers, custom fields, capabilities, courses, levels, enrollments, progress, term management and re-enrollment workflows.</p></div>
 <div class="card"><h3>Phase 3 — Scheduling</h3><p>Branches, rooms/resources, availability, schedule rules, class sessions, attendance, makeup, conflict engine, responsive calendar and notifications.</p></div>
 <div class="card"><h3>Phase 4 — Resources & Communication</h3><p>Object storage, scanning, resource permissions, native messaging, notification engine, email/push adapters and compliant WhatsApp adapter.</p></div>
 <div class="card"><h3>Phase 5 — Finance</h3><p>Fee engine, invoices, payments, receipts, discounts/scholarships, taxes, teacher earnings, webhook processing and reconciliation.</p></div>
@@ -1476,7 +2509,7 @@ POST   /api/v1/webhooks/payments/{provider}</pre>
 <div class="card"><h3>Phase 8 — Hardening</h3><p>Security testing, load testing, backup restore drills, disaster recovery, accessibility, observability, penetration testing and production runbooks.</p></div>
 </section>
 
-<section id="acceptance" class="section">
+<section id="acceptance" class="section route-section route-section">
 <h2>27. Final Acceptance Checklist</h2>
 <div class="card"><h3>Architecture</h3><ul>
 <li>☐ Tenant context is server-derived and tested against cross-tenant attacks.</li>
@@ -1485,6 +2518,7 @@ POST   /api/v1/webhooks/payments/{provider}</pre>
 <div class="card"><h3>Security</h3><ul>
 <li>☐ Super Admin and Org Admin MFA enforced.</li><li>☐ Session management implemented.</li><li>☐ Recovery flows verified.</li><li>☐ High-impact actions require re-authentication/reason where specified.</li><li>☐ Secrets are never client-side.</li><li>☐ Audit chain is immutable and verified daily.</li><li>☐ Audit exports are permissioned and temporary.</li>
 </ul></div>
+<div class="card"><h3>Onboarding & Retention</h3><ul><li>☐ Academy Launch wizard exists for new organizations.</li><li>☐ XLSX/CSV importer maps common academy spreadsheets.</li><li>☐ Preview shows counts, errors, warnings and duplicate candidates.</li><li>☐ Import is idempotent and tenant-scoped.</li><li>☐ Failed migration does not leave partial authoritative records.</li><li>☐ Assisted migration is time-limited and audited.</li><li>☐ Term setup and bulk re-enrollment work.</li><li>☐ Dormant/Maintenance Mode preserves and restores organization data.</li><li>☐ Time-to-operational is measured against the 60-minute target.</li></ul></div>
 <div class="card"><h3>Product</h3><ul>
 <li>☐ Student/guardian many-to-many works.</li><li>☐ Teacher capabilities are explicit.</li><li>☐ Enrollment lifecycle works.</li><li>☐ Calendar conflict engine works.</li><li>☐ Makeup sessions preserve history.</li><li>☐ Online classroom reconnects and handles recording permissions.</li><li>☐ Resources use private signed URLs.</li><li>☐ Payment state is webhook-confirmed.</li><li>☐ Invoices and receipts preserve historical values.</li><li>☐ SaaS lifecycle and entitlements enforce limits.</li>
 </ul></div>
@@ -1604,7 +2638,7 @@ document.querySelectorAll('.pagecat').forEach(function(btn){
 (function(){
   const root=document.getElementById('stakeholderProto');
   if(!root)return;
-  const pages=[{"cat": "admin", "title": "Admin Dashboard", "desc": "KPIs, schedule, alerts, revenue", "area": "Dashboard"}, {"cat": "admin", "title": "Organization Setup", "desc": "Profile, branding, timezone, currency", "area": "Settings"}, {"cat": "admin", "title": "Branches", "desc": "Locations, rooms, operating hours", "area": "Organization"}, {"cat": "admin", "title": "Rooms & Resources", "desc": "Bookable rooms and equipment", "area": "Scheduling"}, {"cat": "admin", "title": "Students", "desc": "Search, filters, status, bulk export", "area": "People"}, {"cat": "admin", "title": "Student Profile", "desc": "Overview, enrollments, progress, fees", "area": "People"}, {"cat": "admin", "title": "Guardians", "desc": "Relationships and child switching", "area": "People"}, {"cat": "admin", "title": "Teachers", "desc": "Employment, capability, capacity", "area": "People"}, {"cat": "admin", "title": "Teacher Profile", "desc": "Qualifications, documents, public profile", "area": "People"}, {"cat": "admin", "title": "Courses", "desc": "Course catalog and levels", "area": "Academics"}, {"cat": "admin", "title": "Curriculum Builder", "desc": "Checklist and standard progress items", "area": "Academics"}, {"cat": "admin", "title": "Enrollments", "desc": "Applications and approval queue", "area": "Academics"}, {"cat": "admin", "title": "Calendar", "desc": "Day, week, month, filters, drag/drop", "area": "Scheduling"}, {"cat": "admin", "title": "Class Session", "desc": "Participants, attendance, notes, resources", "area": "Scheduling"}, {"cat": "admin", "title": "Attendance", "desc": "Daily and student attendance", "area": "Scheduling"}, {"cat": "admin", "title": "Fees", "desc": "Balances, invoices, adjustments", "area": "Finance"}, {"cat": "admin", "title": "Invoice Detail", "desc": "Lines, tax, discount, payment history", "area": "Finance"}, {"cat": "admin", "title": "Payment Detail", "desc": "Gateway reference and reconciliation", "area": "Finance"}, {"cat": "admin", "title": "Teacher Earnings", "desc": "Completed classes and revenue share", "area": "Finance"}, {"cat": "admin", "title": "Resources Library", "desc": "Files, folders, sharing, storage quota", "area": "Resources"}, {"cat": "admin", "title": "Messages", "desc": "Conversations and announcements", "area": "Communication"}, {"cat": "admin", "title": "Notifications", "desc": "Templates, channels, delivery status", "area": "Communication"}, {"cat": "admin", "title": "Analytics", "desc": "Growth, revenue, utilization, attendance", "area": "Reports"}, {"cat": "admin", "title": "Audit Logs", "desc": "Search, filters, exports, integrity", "area": "Security"}, {"cat": "admin", "title": "Admin Management", "desc": "Promote, transfer, remove, limits", "area": "Security"}, {"cat": "admin", "title": "Organization Settings", "desc": "Taxes, fields, policies, feature flags", "area": "Settings"}, {"cat": "teacher", "title": "Teacher Dashboard", "desc": "Today's classes and workload", "area": "Teacher"}, {"cat": "teacher", "title": "My Calendar", "desc": "Classes, availability, conflicts", "area": "Teacher"}, {"cat": "teacher", "title": "My Students", "desc": "Assigned learners and filters", "area": "Teacher"}, {"cat": "teacher", "title": "Student Teaching View", "desc": "Progress, notes, homework", "area": "Teacher"}, {"cat": "teacher", "title": "Attendance Entry", "desc": "Participant-level attendance", "area": "Teacher"}, {"cat": "teacher", "title": "Enrollment Review", "desc": "Application details and approve/reject", "area": "Teacher"}, {"cat": "teacher", "title": "Teacher Profile", "desc": "Self-editable profile fields", "area": "Teacher"}, {"cat": "teacher", "title": "Availability", "desc": "Weekly windows and overrides", "area": "Teacher"}, {"cat": "teacher", "title": "Online Classroom", "desc": "Video, audio, screen share, chat", "area": "Teacher"}, {"cat": "teacher", "title": "Class Resources", "desc": "Upload/share learning materials", "area": "Teacher"}, {"cat": "student", "title": "Student Home", "desc": "Next class, progress, actions", "area": "Student"}, {"cat": "student", "title": "My Calendar", "desc": "Agenda and class details", "area": "Student"}, {"cat": "student", "title": "My Progress", "desc": "Curriculum, notes, homework", "area": "Student"}, {"cat": "student", "title": "My Resources", "desc": "Learning library", "area": "Student"}, {"cat": "student", "title": "My Fees", "desc": "Invoices and outstanding balance", "area": "Student"}, {"cat": "student", "title": "Payment Checkout", "desc": "Secure gateway handoff", "area": "Student"}, {"cat": "student", "title": "Online Classroom", "desc": "Join authenticated class", "area": "Student"}, {"cat": "student", "title": "Messages", "desc": "Teacher/admin conversations", "area": "Student"}, {"cat": "student", "title": "Profile & Security", "desc": "Profile, sessions, MFA", "area": "Student"}, {"cat": "guardian", "title": "Guardian Home", "desc": "Children overview and alerts", "area": "Guardian"}, {"cat": "guardian", "title": "Child Switcher", "desc": "Multiple children", "area": "Guardian"}, {"cat": "guardian", "title": "Child Schedule", "desc": "Agenda and calendar", "area": "Guardian"}, {"cat": "guardian", "title": "Child Progress", "desc": "Learning progress and notes", "area": "Guardian"}, {"cat": "guardian", "title": "Child Fees", "desc": "Invoices, balances, payment", "area": "Guardian"}, {"cat": "guardian", "title": "Payment History", "desc": "Who paid and when", "area": "Guardian"}, {"cat": "guardian", "title": "Messages", "desc": "Teachers and organization", "area": "Guardian"}, {"cat": "platform", "title": "Super Admin Dashboard", "desc": "Tenant health and platform KPIs", "area": "Platform"}, {"cat": "platform", "title": "Organizations", "desc": "Tenant search and lifecycle", "area": "Platform"}, {"cat": "platform", "title": "Organization Detail", "desc": "Health, subscription, support", "area": "Platform"}, {"cat": "platform", "title": "Support Access", "desc": "Controlled impersonation with reason", "area": "Platform"}, {"cat": "platform", "title": "Plans & Entitlements", "desc": "Limits and feature access", "area": "Platform"}, {"cat": "platform", "title": "Feature Flags", "desc": "Controlled rollout", "area": "Platform"}, {"cat": "platform", "title": "Platform Audit", "desc": "Global security and operations", "area": "Platform"}, {"cat": "platform", "title": "Integrity Verification", "desc": "Audit chain verification", "area": "Platform"}, {"cat": "platform", "title": "Subscriptions", "desc": "Billing lifecycle and exceptions", "area": "Platform"}, {"cat": "public", "title": "Organization Home", "desc": "Branded public landing page", "area": "Public"}, {"cat": "public", "title": "About", "desc": "Organization story", "area": "Public"}, {"cat": "public", "title": "Courses", "desc": "Programs and levels", "area": "Public"}, {"cat": "public", "title": "Course Detail", "desc": "Overview, outcomes, CTA", "area": "Public"}, {"cat": "public", "title": "Teachers", "desc": "Approved public profiles", "area": "Public"}, {"cat": "public", "title": "Teacher Detail", "desc": "Public teacher profile", "area": "Public"}, {"cat": "public", "title": "Admissions / Enquiry", "desc": "Lead capture", "area": "Public"}, {"cat": "public", "title": "Enrollment Link", "desc": "Private tokenized enrollment", "area": "Public"}, {"cat": "public", "title": "Contact", "desc": "Address, map, contact", "area": "Public"}];
+  const pages=[{"cat": "admin", "title": "Admin Dashboard", "desc": "KPIs, schedule, alerts, revenue", "area": "Dashboard"}, {"cat": "admin", "title": "Organization Setup", "desc": "Profile, branding, timezone, currency", "area": "Settings"}, {"cat": "admin", "title": "Academy Launch", "desc": "Guided onboarding and migration progress", "area": "Onboarding"}, {"cat": "admin", "title": "Import Center", "desc": "Upload, map and validate Excel/CSV data", "area": "Onboarding"}, {"cat": "admin", "title": "Import Review", "desc": "Duplicates, conflicts and commit preview", "area": "Onboarding"}, {"cat": "admin", "title": "Re-enrollment", "desc": "Prepare returning students for a new term", "area": "Onboarding"}, {"cat": "admin", "title": "Branches", "desc": "Locations, rooms, operating hours", "area": "Organization"}, {"cat": "admin", "title": "Rooms & Resources", "desc": "Bookable rooms and equipment", "area": "Scheduling"}, {"cat": "admin", "title": "Students", "desc": "Search, filters, status, bulk export", "area": "People"}, {"cat": "admin", "title": "Student Profile", "desc": "Overview, enrollments, progress, fees", "area": "People"}, {"cat": "admin", "title": "Guardians", "desc": "Relationships and child switching", "area": "People"}, {"cat": "admin", "title": "Teachers", "desc": "Employment, capability, capacity", "area": "People"}, {"cat": "admin", "title": "Teacher Profile", "desc": "Qualifications, documents, public profile", "area": "People"}, {"cat": "admin", "title": "Courses", "desc": "Course catalog and levels", "area": "Academics"}, {"cat": "admin", "title": "Curriculum Builder", "desc": "Checklist and standard progress items", "area": "Academics"}, {"cat": "admin", "title": "Enrollments", "desc": "Applications and approval queue", "area": "Academics"}, {"cat": "admin", "title": "Calendar", "desc": "Day, week, month, filters, drag/drop", "area": "Scheduling"}, {"cat": "admin", "title": "Class Session", "desc": "Participants, attendance, notes, resources", "area": "Scheduling"}, {"cat": "admin", "title": "Attendance", "desc": "Daily and student attendance", "area": "Scheduling"}, {"cat": "admin", "title": "Fees", "desc": "Balances, invoices, adjustments", "area": "Finance"}, {"cat": "admin", "title": "Invoice Detail", "desc": "Lines, tax, discount, payment history", "area": "Finance"}, {"cat": "admin", "title": "Payment Detail", "desc": "Gateway reference and reconciliation", "area": "Finance"}, {"cat": "admin", "title": "Teacher Earnings", "desc": "Completed classes and revenue share", "area": "Finance"}, {"cat": "admin", "title": "Resources Library", "desc": "Files, folders, sharing, storage quota", "area": "Resources"}, {"cat": "admin", "title": "Messages", "desc": "Conversations and announcements", "area": "Communication"}, {"cat": "admin", "title": "Notifications", "desc": "Templates, channels, delivery status", "area": "Communication"}, {"cat": "admin", "title": "Analytics", "desc": "Growth, revenue, utilization, attendance", "area": "Reports"}, {"cat": "admin", "title": "Audit Logs", "desc": "Search, filters, exports, integrity", "area": "Security"}, {"cat": "admin", "title": "Admin Management", "desc": "Promote, transfer, remove, limits", "area": "Security"}, {"cat": "admin", "title": "Organization Settings", "desc": "Taxes, fields, policies, feature flags", "area": "Settings"}, {"cat": "teacher", "title": "Teacher Dashboard", "desc": "Today's classes and workload", "area": "Teacher"}, {"cat": "teacher", "title": "My Calendar", "desc": "Classes, availability, conflicts", "area": "Teacher"}, {"cat": "teacher", "title": "My Students", "desc": "Assigned learners and filters", "area": "Teacher"}, {"cat": "teacher", "title": "Student Teaching View", "desc": "Progress, notes, homework", "area": "Teacher"}, {"cat": "teacher", "title": "Attendance Entry", "desc": "Participant-level attendance", "area": "Teacher"}, {"cat": "teacher", "title": "Enrollment Review", "desc": "Application details and approve/reject", "area": "Teacher"}, {"cat": "teacher", "title": "Teacher Profile", "desc": "Self-editable profile fields", "area": "Teacher"}, {"cat": "teacher", "title": "Availability", "desc": "Weekly windows and overrides", "area": "Teacher"}, {"cat": "teacher", "title": "Online Classroom", "desc": "Video, audio, screen share, chat", "area": "Teacher"}, {"cat": "teacher", "title": "Class Resources", "desc": "Upload/share learning materials", "area": "Teacher"}, {"cat": "student", "title": "Student Home", "desc": "Next class, progress, actions", "area": "Student"}, {"cat": "student", "title": "My Calendar", "desc": "Agenda and class details", "area": "Student"}, {"cat": "student", "title": "My Progress", "desc": "Curriculum, notes, homework", "area": "Student"}, {"cat": "student", "title": "My Resources", "desc": "Learning library", "area": "Student"}, {"cat": "student", "title": "My Fees", "desc": "Invoices and outstanding balance", "area": "Student"}, {"cat": "student", "title": "Payment Checkout", "desc": "Secure gateway handoff", "area": "Student"}, {"cat": "student", "title": "Online Classroom", "desc": "Join authenticated class", "area": "Student"}, {"cat": "student", "title": "Messages", "desc": "Teacher/admin conversations", "area": "Student"}, {"cat": "student", "title": "Profile & Security", "desc": "Profile, sessions, MFA", "area": "Student"}, {"cat": "guardian", "title": "Guardian Home", "desc": "Children overview and alerts", "area": "Guardian"}, {"cat": "guardian", "title": "Child Switcher", "desc": "Multiple children", "area": "Guardian"}, {"cat": "guardian", "title": "Child Schedule", "desc": "Agenda and calendar", "area": "Guardian"}, {"cat": "guardian", "title": "Child Progress", "desc": "Learning progress and notes", "area": "Guardian"}, {"cat": "guardian", "title": "Child Fees", "desc": "Invoices, balances, payment", "area": "Guardian"}, {"cat": "guardian", "title": "Payment History", "desc": "Who paid and when", "area": "Guardian"}, {"cat": "guardian", "title": "Messages", "desc": "Teachers and organization", "area": "Guardian"}, {"cat": "platform", "title": "Super Admin Dashboard", "desc": "Tenant health and platform KPIs", "area": "Platform"}, {"cat": "platform", "title": "Organizations", "desc": "Tenant search and lifecycle", "area": "Platform"}, {"cat": "platform", "title": "Organization Detail", "desc": "Health, subscription, support", "area": "Platform"}, {"cat": "platform", "title": "Support Access", "desc": "Controlled impersonation with reason", "area": "Platform"}, {"cat": "platform", "title": "Plans & Entitlements", "desc": "Limits and feature access", "area": "Platform"}, {"cat": "platform", "title": "Feature Flags", "desc": "Controlled rollout", "area": "Platform"}, {"cat": "platform", "title": "Platform Audit", "desc": "Global security and operations", "area": "Platform"}, {"cat": "platform", "title": "Integrity Verification", "desc": "Audit chain verification", "area": "Platform"}, {"cat": "platform", "title": "Subscriptions", "desc": "Billing lifecycle and exceptions", "area": "Platform"}, {"cat": "public", "title": "Organization Home", "desc": "Branded public landing page", "area": "Public"}, {"cat": "public", "title": "About", "desc": "Organization story", "area": "Public"}, {"cat": "public", "title": "Courses", "desc": "Programs and levels", "area": "Public"}, {"cat": "public", "title": "Course Detail", "desc": "Overview, outcomes, CTA", "area": "Public"}, {"cat": "public", "title": "Teachers", "desc": "Approved public profiles", "area": "Public"}, {"cat": "public", "title": "Teacher Detail", "desc": "Public teacher profile", "area": "Public"}, {"cat": "public", "title": "Admissions / Enquiry", "desc": "Lead capture", "area": "Public"}, {"cat": "public", "title": "Enrollment Link", "desc": "Private tokenized enrollment", "area": "Public"}, {"cat": "public", "title": "Contact", "desc": "Address, map, contact", "area": "Public"}];
   const state={role:'admin',index:0};
   const roleNames={admin:'Admin',teacher:'Teacher',student:'Student',guardian:'Guardian',platform:'Platform',public:'Public'};
   const list=root.querySelector('#spPageList'),screen=root.querySelector('#spScreen'),roleLabel=root.querySelector('#spRoleLabel'),count=root.querySelector('#spPageCount'),url=root.querySelector('#spUrl');
@@ -1621,6 +2655,10 @@ document.querySelectorAll('.pagecat').forEach(function(btn){
     const head=`<div class="sp-appbar"><div><h3>${esc(p.title)}</h3><div class="sp-muted">${esc(p.desc)}</div></div><button type="button" class="sp-secondary">More</button><button type="button" class="sp-primary">+ Create</button></div>`;
     if(t.includes('dashboard')||t==='student home'||t==='guardian home'||t==='teacher dashboard'){
       return head+kpis(p.cat==='platform'?[['Organizations','148','+12 this month'],['Active','139','Healthy'],['Trial','9','Needs conversion'],['MRR','₹8.4L','+9.2%']]:[['Active students','428','+8.4%'],['Classes','612','+4.1%'],['Revenue','₹4.82L','+12.8%'],['Pending fees','₹38.4K','17 invoices']])+`<div class="sp-grid2"><div class="sp-card"><h4>Today</h4>${rows([['09:00 · Piano · Ananya','Meera Joseph · Room 2','Scheduled'],['11:30 · Guitar · Rahul','David Thomas · Online','Online'],['16:00 · Keyboard Group','8 participants · Studio A','Group'],['18:00 · Theory','Online classroom','Scheduled']])}</div><div class="sp-card"><h4>Needs attention</h4>${rows([['4 approvals pending','Enrollment review','Review'],['3 failed payments','Finance','Action'],['2 schedule conflicts','Calendar','Resolve']])}</div></div>`;
+    }
+    if(t.includes('academy launch')||t.includes('import center')||t.includes('import review')||t.includes('re-enrollment')){
+      if(t.includes('re-enrollment')) return head+`<div class="sp-grid2"><div class="sp-card"><h4>Previous term</h4>${rows([['176 eligible students','2026 Term 1','Eligible'],['142 returning candidates','Ready to invite','Ready'],['18 inactive','Needs review','Review'],['16 pending confirmation','Awaiting confirmation','Pending']])}</div><div class="sp-card"><h4>Re-enrollment actions</h4><p>Restore eligible course and recurring schedule patterns, then request confirmation for changes.</p><div class="sp-form-actions"><button type="button" class="sp-secondary">Preview</button><button type="button" class="sp-primary">Start re-enrollment</button></div></div></div>`;
+      return head+`<div class="sp-card"><h4>${t.includes('import')?'Migration workspace':'Academy Launch'}</h4><p class="sp-muted">Existing academy data is prepared before becoming authoritative.</p><div class="sp-grid3"><div class="sp-card"><small class="sp-muted">Students</small><h2>187</h2><span class="sp-muted">recognized</span></div><div class="sp-card"><small class="sp-muted">Guardians</small><h2>42</h2><span class="sp-muted">matched</span></div><div class="sp-card"><small class="sp-muted">Schedules</small><h2>23</h2><span class="sp-muted">recognized</span></div></div>${rows([['187 students recognized','Name/contact fields mapped','Ready'],['6 duplicate candidates','Review before commit','Review'],['3 unmapped columns','Custom fields available','Warning'],['23 recurring schedules','Teacher/time/room detected','Ready']])}<div class="sp-form-actions"><button type="button" class="sp-secondary">Download issues</button><button type="button" class="sp-primary">${t.includes('review')?'Commit import':'Continue setup'}</button></div></div>`;
     }
     if(t.includes('calendar')||t.includes('availability'))return head+calendar();
     if(t.includes('online classroom'))return `<div class="sp-appbar"><div><h3>${esc(p.title)}</h3><div class="sp-muted">${esc(p.desc)}</div></div><button type="button" class="sp-secondary">Class details</button></div><div class="sp-grid2"><div class="sp-video"><b>${esc(p.cat==='teacher'?'MEERA JOSEPH':'ONLINE CLASSROOM')}</b><div class="sp-video-main"><span>ANANYA</span></div><div class="sp-controls"><button type="button">🎙 Mic</button><button type="button">🎥 Camera</button><button type="button">▣ Share</button><button type="button">● Record</button><button type="button">💬 Chat</button></div></div><div class="sp-chat"><h4>Class chat</h4><p><b>Meera</b><br>Let's repeat the left-hand pattern.</p><p><b>Ananya</b><br>Okay!</p><div class="sp-note">Recording is private until the teacher shares it.</div></div></div>`;
@@ -1659,30 +2697,34 @@ document.querySelectorAll('.pagecat').forEach(function(btn){
 
 <script>
 (function(){
-  const root=document.documentElement;
-  const button=document.getElementById('themeToggle');
-  if(!button)return;
-
-  function apply(theme){
-    const dark=theme==='dark';
-    root.setAttribute('data-theme',dark?'dark':'light');
-    button.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');
-    
+  function initThemeToggle(){
+    const root=document.documentElement;
+    const button=document.getElementById('themeToggle');
+    if(!button || button.dataset.themeReady==='1') return;
+    const current=()=>root.getAttribute('data-theme')==='dark'?'dark':'light';
+    const apply=(theme,persist)=>{
+      const next=theme==='dark'?'dark':'light';
+      root.setAttribute('data-theme',next);
+      button.setAttribute('aria-label',next==='dark'?'Switch to light mode':'Switch to dark mode');
+      button.dataset.theme=next;
+      if(persist){try{localStorage.setItem('academy-theme',next)}catch(e){}}
+    };
+    let initial='light';
+    try{
+      const saved=localStorage.getItem('academy-theme');
+      if(saved==='dark'||saved==='light') initial=saved;
+      else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) initial='dark';
+    }catch(e){}
+    apply(initial,false);
+    button.dataset.themeReady='1';
+    button.addEventListener('click',function(e){
+      e.preventDefault();
+      e.stopPropagation();
+      apply(current()==='dark'?'light':'dark',true);
+    });
   }
-
-  let initial='light';
-  try{
-    const saved=localStorage.getItem('academy-theme');
-    if(saved==='dark'||saved==='light') initial=saved;
-    else if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) initial='dark';
-  }catch(e){}
-  apply(initial);
-
-  button.addEventListener('click',function(){
-    const next=root.getAttribute('data-theme')==='dark'?'light':'dark';
-    apply(next);
-    try{localStorage.setItem('academy-theme',next)}catch(e){}
-  });
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initThemeToggle,{once:true});
+  else initThemeToggle();
 })();
 </script>
 
@@ -1711,9 +2753,7 @@ document.querySelectorAll('.pagecat').forEach(function(btn){
         const empty=document.querySelector('.search-empty');
         if(empty)empty.classList.remove('visible');
       }
-      history.replaceState(null,'','#'+encodeURIComponent(id));
-      document.getElementById(id).scrollIntoView({behavior:'smooth',block:'start'});
-      setActive(id);
+      showRoute(id,true);
       if(window.innerWidth<=900){
         side.classList.remove('open','active');
         document.body.classList.remove('sidebar-open');
@@ -1725,25 +2765,22 @@ document.querySelectorAll('.pagecat').forEach(function(btn){
     navButtons.forEach(btn=>btn.classList.toggle('active',btn.dataset.target===id));
   }
 
-  function routeFromHash(){
-    const raw=decodeURIComponent(location.hash.replace(/^#/,''));
-    if(!raw)return;
-    const target=document.getElementById(raw);
-    if(!target)return;
-    setActive(raw);
-    requestAnimationFrame(()=>target.scrollIntoView({behavior:'smooth',block:'start'}));
+  function showRoute(id, updateHash){
+    const target=document.getElementById(id);
+    if(!target || !target.classList.contains('route-section')) return false;
+    document.querySelectorAll('main .route-section').forEach(s=>s.classList.remove('route-active'));
+    target.classList.add('route-active');
+    document.body.dataset.route=id;
+    setActive(id);
+    const scroller=document.querySelector('.main .content');
+    if(scroller) scroller.scrollTop=0;
+    if(updateHash) history.pushState(null,'','#'+encodeURIComponent(id));
+    return true;
   }
 
-  if('IntersectionObserver' in window){
-    const observer=new IntersectionObserver(entries=>{
-      const visible=entries
-        .filter(e=>e.isIntersecting)
-        .sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
-      if(visible && visible.target.id && !document.body.classList.contains('searching')){
-        setActive(visible.target.id);
-      }
-    },{rootMargin:'-92px 0px -55% 0px',threshold:[0,.1,.25,.5]});
-    navSections.forEach(s=>observer.observe(s));
+  function routeFromHash(){
+    const raw=decodeURIComponent(location.hash.replace(/^#/,''));
+    showRoute(raw || 'executive', false);
   }
 
   function updateMenu(){
@@ -1790,6 +2827,7 @@ document.querySelectorAll('.pagecat').forEach(function(btn){
   });
 
   window.addEventListener('hashchange',routeFromHash);
+  window.addEventListener('popstate',routeFromHash);
 
   try{
     if(window.innerWidth>900 && localStorage.getItem('academy-sidebar')==='collapsed'){
@@ -1832,11 +2870,13 @@ document.querySelectorAll('.pagecat').forEach(function(btn){
         return;
       }
       let matches=0;
+      let firstMatch=null;
       allSections.forEach(s=>{
         const hit=s.textContent.toLowerCase().includes(q);
         s.classList.toggle('search-hit',hit);
-        if(hit)matches++;
+        if(hit){matches++; if(!firstMatch) firstMatch=s.id;}
       });
+      if(firstMatch) showRoute(firstMatch,false);
       empty.classList.toggle('visible',matches===0);
     });
   }
@@ -1854,5 +2894,17 @@ document.querySelectorAll('.ptab').forEach(function(b){
 });
 </script>
 
+
+<script id="v34-qa">
+(function(){
+  document.addEventListener('DOMContentLoaded',function(){
+    var print=document.getElementById('printButton');
+    if(print){
+      print.addEventListener('click',function(e){ e.preventDefault(); window.print(); });
+      print.removeAttribute('download');
+    }
+  });
+})();
+</script>
 </body>
 </html>
